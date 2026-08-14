@@ -2,7 +2,7 @@
 # grn_parity.sh -- cross-checks the two INDEPENDENTLY WRITTEN .GRN tag
 # walkers at corpus level:
 #
-#   godot-port/grnwalk.gd --corpus       (GDScript, written first)
+#   godot-port/parity/grnwalk.gd --corpus       (GDScript, written first)
 #   analysis/tools/formats/grn_tagwalk.py --corpus  (Python, written from
 #                                             direct byte evidence
 #                                             alone, never from the GDScript
@@ -67,7 +67,7 @@ compare() {
 }
 
 echo "grn_parity: sweeping GDScript walker (grnwalk.gd --corpus)..."
-timeout 900 godot --headless --path "$PORT" --script res://grnwalk.gd -- --corpus --install="$INSTALL" \
+timeout 900 godot --headless --path "$PORT" --script res://parity/grnwalk.gd -- --corpus --install="$INSTALL" \
 	>"$GD_OUT" 2>&1
 GD_RC=$?
 

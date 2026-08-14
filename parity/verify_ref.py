@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Reference output for godot-port/verify.gd -- the Python side of the parity check.
+"""Reference output for godot-port/parity/verify.gd -- the Python side of the parity check.
 
 Personal-use interoperability work on legally-owned media. Output stays local.
 
   ./verify_ref.py > /tmp/ref.txt
-  godot --headless --path ../../godot-port --script res://verify.gd > /tmp/got.txt
+  godot --headless --path ../../godot-port --script res://parity/verify.gd > /tmp/got.txt
   diff /tmp/ref.txt /tmp/got.txt
 
 Prints the same tab-separated facts in the same order, minus the timing column
@@ -22,7 +22,7 @@ import grn_tagwalk
 import grn_bonenames
 
 SECTORS = [(49, 49), (50, 50), (51, 51), (0, 15), (14, 19), (31, 24), (99, 99)]
-# A separate list, not SECTORS: mirrors godot-port/verify.gd's
+# A separate list, not SECTORS: mirrors godot-port/parity/verify.gd's
 # WALKABLE_SECTORS -- reusing SECTORS directly would leave every sampled
 # sector at zero regions (measured, not assumed), which makes the two things
 # this layer has to show -- a non-zero region/open count, and an md5 that
@@ -32,10 +32,10 @@ SECTORS = [(49, 49), (50, 50), (51, 51), (0, 15), (14, 19), (31, 24), (99, 99)]
 WALKABLE_SECTORS = [(64, 39), (4, 37), (52, 51), (0, 15), (14, 19), (31, 24), (99, 99)]
 TEXTURES = [0, 1, 2, 1000, 5000, 20000]
 # BAT.GRN, GLADIATOR.GRN, GLAD_SA5_SHOULDER.GRN -- the sampled set, mirrored
-# verbatim by godot-port/verify.gd's MODELS constant.
+# verbatim by godot-port/parity/verify.gd's MODELS constant.
 MODELS = [1, 589, 203]
 # One attack, one idle, one run, two bone counts between them -- mirrored
-# verbatim by godot-port/verify.gd's MOTIONS constant.
+# verbatim by godot-port/parity/verify.gd's MOTIONS constant.
 MOTIONS = [2847, 2899, 2903]
 PAK_HDR, PAK_IDX = 256, 12
 KEY_HDR, KEY_REC = 256, 768
@@ -371,7 +371,7 @@ def region_cell_class(grid, w, h, cx, cy):
 
 def walkable_facts(stream, gx, gy):
     """(region_count, cell_count, open_cell_count, md5) for one sector's
-    walkability fact line -- see godot-port/verify.gd's mirror for the
+    walkability fact line -- see godot-port/parity/verify.gd's mirror for the
     hashed-text definition, which this function implements identically:
     per region, its anchor/size as decimal text, then one '1' (open, per
     WALKABLE_CLASSES) or '0' (blocked) per cell in row-major order,
@@ -546,7 +546,7 @@ def main():
                     names.append(n or "")
             bone_names_by_idx[idx] = names
 
-        # Skeleton layer -- the Python side of godot-port/verify.gd's `bones` fact
+        # Skeleton layer -- the Python side of godot-port/parity/verify.gd's `bones` fact
         # line, printed between the models block and the layer check on both sides.
         #
         # The `rest_eq_bind` line that stood beside it was removed from BOTH sides
@@ -569,7 +569,7 @@ def main():
             print("bones\t%d\tcount=%d\troots=%d\tbinds=%d\tsanitised=%d\tmd5=%s" % (
                 idx, f["count"], f["roots"], f["binds"], f["sanitised"], f["md5"]))
 
-        # Bone-name layer -- the Python side of godot-port/verify.gd's
+        # Bone-name layer -- the Python side of godot-port/parity/verify.gd's
         # `bonename` fact line, printed directly after the bones block on
         # BOTH sides.
         for idx in MODELS:
@@ -580,7 +580,7 @@ def main():
             print("bonename\t%d\tnamed=%d\tempty=%d\tunique=%d\tmd5=%s" % (
                 idx, named, len(names) - named, len(uniq), md5(text.encode("utf-8"))))
 
-        # Animation-clip layer -- the Python side of godot-port/verify.gd's
+        # Animation-clip layer -- the Python side of godot-port/parity/verify.gd's
         # `motion` fact line, printed between the bones block and the layer
         # check on both sides.
         #

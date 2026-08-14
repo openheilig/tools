@@ -1,0 +1,15 @@
+LIBRARY kernel32.dll
+EXPORTS
+LoadLibraryA@4 == LoadLibraryA
+GetProcAddress@8 == GetProcAddress
+FreeLibrary@4 == FreeLibrary
+GetLastError@0 == GetLastError
+ExitProcess@4 == ExitProcess
+GetStdHandle@4 == GetStdHandle
+WriteFile@20 == WriteFile
+GetCommandLineA@0 == GetCommandLineA
+CreateFileA@28 == CreateFileA
+ReadFile@20 == ReadFile
+GetFileSize@8 == GetFileSize
+CloseHandle@4 == CloseHandle
+VirtualAlloc@16 == VirtualAlloc

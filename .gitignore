@@ -1,0 +1,30 @@
+# DEFAULT DENY. See README.md.
+#
+# Only tools we wrote. No third-party binaries (Ghidra, innoextract: those live
+# in ../../Sacred Gold/analysis/vendor/ and are reachable here through the
+# untracked ./vendor symlink), no compiled artefacts, no captured game data.
+#
+# Allowlist, not blocklist: a blocklist fails open. To track a new file type,
+# add a "!" line and think about what is in it first.
+
+# 1. Deny everything, but still descend into directories.
+*
+!*/
+
+# 2. Allow hand-written sources.
+!.gitignore
+!LICENSE
+!*.py
+!*.sh
+!*.c
+!*.h
+!*.def
+!*.md
+
+# 3. Belt and braces: build output and third-party trees.
+vendor/
+__pycache__/
+*.so
+*.o
+*.bak
+altest

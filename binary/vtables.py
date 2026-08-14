@@ -14,7 +14,7 @@ standard layout backwards and recover far more than names:
 `sacred` is a non-PIE ET_EXEC, so every internal pointer is stored literally in
 the file -- no relocation processing needed.
 
-    python3 analysis/tools/vtables.py install/sacred
+    python3 analysis/tools/binary/vtables.py install/sacred
 """
 import struct
 import sys

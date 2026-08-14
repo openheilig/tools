@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Find every `call`/`jmp rel32` in .text that targets a given address.
 
-    python3 analysis/tools/xrefs.py install/sacred 0x816b34c
+    python3 analysis/tools/binary/xrefs.py install/sacred 0x816b34c
 
 Why not grep the objdump: a whole-binary `objdump -d` of this stripped
 binary desyncs (AGENTS.md "Three traps that cost hours"), so anything read

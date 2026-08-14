@@ -3,7 +3,7 @@
 # walkers at corpus level:
 #
 #   godot-port/grnwalk.gd --corpus       (GDScript, Plan 01/02)
-#   analysis/tools/grn_tagwalk.py --corpus  (Python, Plan 03, written from
+#   analysis/tools/formats/grn_tagwalk.py --corpus  (Python, Plan 03, written from
 #                                             03-RESEARCH.md's byte evidence
 #                                             alone, never from the GDScript
 #                                             source)
@@ -24,8 +24,8 @@
 # failure: two empty extractions would otherwise compare equal and this
 # script would certify agreement while comparing nothing.
 #
-#   sh analysis/tools/grn_parity.sh
-#   SACRED_INSTALL=/path/to/install sh analysis/tools/grn_parity.sh
+#   sh analysis/tools/parity/grn_parity.sh
+#   SACRED_INSTALL=/path/to/install sh analysis/tools/parity/grn_parity.sh
 #
 # RTK shell hazard (CLAUDE.md): a Claude Code hook rewrites bare
 # git/grep/wc/diff into a "rtk" wrapper with different output -- it once
@@ -34,7 +34,7 @@
 
 set -u
 
-ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 PORT="$ROOT/godot-port"
 INSTALL="${SACRED_INSTALL:-$ROOT/install}"
 
@@ -72,7 +72,7 @@ timeout 900 godot --headless --path "$PORT" --script res://grnwalk.gd -- --corpu
 GD_RC=$?
 
 echo "grn_parity: sweeping Python walker (grn_tagwalk.py --corpus)..."
-SACRED_INSTALL="$INSTALL" python3 "$ROOT/analysis/tools/grn_tagwalk.py" --corpus >"$PY_OUT" 2>&1
+SACRED_INSTALL="$INSTALL" python3 "$ROOT/analysis/tools/formats/grn_tagwalk.py" --corpus >"$PY_OUT" 2>&1
 PY_RC=$?
 
 if [ "$GD_RC" -ne 0 ]; then

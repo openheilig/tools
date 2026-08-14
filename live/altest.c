@@ -14,9 +14,9 @@
  * -dev package for a library we already have the ABI of, and it is four
  * functions.
  *
- *   gcc -m32 -o analysis/tools/altest analysis/tools/altest.c \
+ *   gcc -m32 -o analysis/tools/live/altest analysis/tools/live/altest.c \
  *       -Linstall/lib/lib1 -lopenal -Wl,-rpath,'$ORIGIN/../../install/lib/lib1'
- *   ALSOFT_CONF=... ./analysis/tools/altest [device]
+ *   ALSOFT_CONF=... ./analysis/tools/live/altest [device]
  */
 #include <stdio.h>
 #include <stdlib.h>

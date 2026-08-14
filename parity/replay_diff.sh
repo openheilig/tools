@@ -30,12 +30,12 @@
 # observed reporting two files "identical" when they were not
 # (CLAUDE.md).
 #
-#   sh analysis/tools/replay_diff.sh
-#   sh analysis/tools/replay_diff.sh --control
+#   sh analysis/tools/parity/replay_diff.sh
+#   sh analysis/tools/parity/replay_diff.sh --control
 
 set -u
 
-ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 PORT="$ROOT/godot-port"
 
 MODE="${1:-}"

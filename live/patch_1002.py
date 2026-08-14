@@ -21,8 +21,8 @@ Patches are read off the 1.0.01 pair (install/sacred_orig vs the preserved
 install/sacred.1.0.01) and re-applied to the 1.0.02 binary; the result is
 written next to its source and copied into install/ by hand.
 
-Usage: python3 analysis/tools/patch_1002.py          # -> sacred-1.0.02-patched
-       python3 analysis/tools/patch_1002.py --check  # re-derive, verify, no write
+Usage: python3 analysis/tools/live/patch_1002.py          # -> sacred-1.0.02-patched
+       python3 analysis/tools/live/patch_1002.py --check  # re-derive, verify, no write
 """
 import re
 import struct

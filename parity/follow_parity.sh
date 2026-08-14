@@ -21,7 +21,7 @@
 # --replay= never takes it, so the second pass stays the plain no-view path
 # it always was. The two dumps must be byte-identical.
 #
-#   sh analysis/tools/follow_parity.sh
+#   sh analysis/tools/parity/follow_parity.sh
 #
 # RTK shell hazard (CLAUDE.md): a Claude Code hook rewrites bare
 # git/grep/wc/diff into a "rtk" wrapper with different output -- grn_parity.sh
@@ -30,13 +30,13 @@
 #
 # This project ships one graphics backend and one only. Forcing the other
 # one from a command line override has silently invalidated a whole
-# session of "verified" captures before (analysis/tools/look.sh's own
+# session of "verified" captures before (analysis/tools/drive/look.sh's own
 # header carries the same warning) -- this script never does that, and
 # never writes that override's flag name anywhere below, comments included.
 
 set -u
 
-ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 PORT="$ROOT/godot-port"
 SCREEN=${FOLLOW_PARITY_SCREEN:-1600x1000x24}
 

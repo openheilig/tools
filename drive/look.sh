@@ -1,9 +1,9 @@
 #!/bin/sh
 # look.sh -- see what either engine is drawing, without stealing your display.
 #
-#   sh analysis/tools/look.sh port   [openheilig args...]
-#   sh analysis/tools/look.sh retail [label] [SACRED_AUTO] [shot-ms] [seconds]
-#   sh analysis/tools/look.sh both   [openheilig args...]
+#   sh analysis/tools/drive/look.sh port   [openheilig args...]
+#   sh analysis/tools/drive/look.sh retail [label] [SACRED_AUTO] [shot-ms] [seconds]
+#   sh analysis/tools/drive/look.sh both   [openheilig args...]
 #
 # Both subcommands end by printing the PNG paths, one per line, so an agent can
 # read the last lines of output and open them directly.
@@ -20,7 +20,7 @@
 # surfaced. Vulkan works fine under Xvfb; there is no reason to force GL.
 
 set -u
-ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 OUT=/tmp/look
 SCREEN=${LOOK_SCREEN:-1600x1000x24}
 MODE=${1:-port}
@@ -63,11 +63,11 @@ shot_retail() {
     # for 30 seconds. LOOK_DISPLAY=real opts out, for when a human wants to
     # watch it live.
     if [ "${LOOK_DISPLAY:-xvfb}" = real ]; then
-        sh "$ROOT/analysis/tools/shot.sh" "$label" "$auto" "$shots" "$dur"
+        sh "$ROOT/analysis/tools/drive/shot.sh" "$label" "$auto" "$shots" "$dur"
     else
         have xvfb-run || die "look.sh: xvfb-run not installed"
         xvfb-run -a -s "-screen 0 ${LOOK_RETAIL_SCREEN:-1024x768x24}" \
-            sh "$ROOT/analysis/tools/shot.sh" "$label" "$auto" "$shots" "$dur"
+            sh "$ROOT/analysis/tools/drive/shot.sh" "$label" "$auto" "$shots" "$dur"
     fi
 }
 

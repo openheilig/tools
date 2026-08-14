@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Recover function boundaries from .eh_frame in the stripped LGP binary.
 
-    python3 analysis/tools/ehframe_funcs.py install/sacred > funcs.txt
-    python3 analysis/tools/ehframe_funcs.py install/sacred 0x8210b91   # who owns this addr
+    python3 analysis/tools/binary/ehframe_funcs.py install/sacred > funcs.txt
+    python3 analysis/tools/binary/ehframe_funcs.py install/sacred 0x8210b91   # who owns this addr
 
 Why this exists: `install/sacred` has no symbol table, and a linear
 `objdump -d` of it desyncs (see AGENTS.md "Three traps that cost hours") --

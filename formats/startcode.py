@@ -9,7 +9,7 @@ THE TAG TABLE BELOW IS DERIVED FROM THE INTERPRETER, NOT FITTED TO THE DATA
 (row 720). The interpreter dispatches the tag byte through a 162-entry jump
 table at 0x086f3fbc into 52 handlers; each handler's cursor advance was
 recovered by FOLLOWING CONTROL FLOW from its entry to the shared epilogue
-(analysis/tools/tagwidths.py). Width = advance - 1, the one byte being the tag.
+(analysis/tools/binary/tagwidths.py). Width = advance - 1, the one byte being the tag.
 
 Three rules complete it, and each was worth several failed attempts:
   * 66 tags fall through to the DEFAULT handler at 0x0826e0bc, which is just

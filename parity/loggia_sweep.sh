@@ -13,7 +13,7 @@
 set -u
 OUT=/tmp/p2/loggia
 mkdir -p "$OUT"
-cd "$(dirname "$0")/../../godot-port" || exit 1
+cd "$(dirname "$0")/../../../godot-port" || exit 1
 
 CX=${CX:-2320}
 for CY in $(seq "${FROM:-1922}" "${STEP:-2}" "${TO:-1948}"); do

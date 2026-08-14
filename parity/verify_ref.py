@@ -16,7 +16,8 @@ import hashlib, math, os, struct, sys, zlib
 # grn_tagwalk.py shares this directory -- imported, never translated, so the
 # corpus-level independence Plan 03 established (03-03-SUMMARY.md) is not
 # undone by a second hand-written walker living in this file too.
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'formats'))
 import grn_tagwalk
 import grn_bonenames
 
@@ -50,10 +51,12 @@ REGION_TYPE = 6
 # plain constant, the same way LAYER_RULES above mirrors verify.gd's.
 WALKABLE_CLASSES = {2, 9, 0xA, 0x10}   # FLOOR, DOOR, STEP, OPEN
 
-GAME = os.environ.get("SACRED_INSTALL") or os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "../../install")
-PORT = os.environ.get("SACRED_PORT") or os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "../../godot-port")
+# abspath() collapses the `..` lexically: the workspace reaches these tools
+# through the analysis/tools symlink, and the kernel would resolve `..` past it.
+GAME = os.environ.get("SACRED_INSTALL") or os.path.abspath(os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "../../../install"))
+PORT = os.environ.get("SACRED_PORT") or os.path.abspath(os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "../../../godot-port"))
 
 # world/ never touches the scene tree/threads; view/ never names a world
 # type or defines its own per-frame entry point -- checked, not just written.

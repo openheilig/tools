@@ -5,13 +5,13 @@
 # so `gdb -p <pid>` on a running game is refused.  gdb has to launch it.
 # Replicates play.sh's environment (it `exec`s, so we can't just wrap it).
 #
-#   sh analysis/tools/gdb_run.sh "<SACRED_AUTO>" <sample-after-sec> [nsamples]
+#   sh analysis/tools/live/gdb_run.sh "<SACRED_AUTO>" <sample-after-sec> [nsamples]
 #
 # ponytail: no symbols in the binary -- the useful output is the raw
 # `0x08xxxxxx in ?? ()` addresses, which objdump then resolves.
 
 set -u
-ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 cd "$ROOT/install"
 
 SCRIPT=${1:-}

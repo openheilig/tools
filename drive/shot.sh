@@ -6,12 +6,12 @@
 # so autopilot.so hooks SDL_GL_SwapBuffers and glReadPixels the back buffer
 # itself.  Output is PPM (no libpng needed), converted to PNG for viewing.
 #
-#   sh analysis/tools/shot.sh "<label>" "<SACRED_AUTO>" "<ms,ms,...>" [seconds]
+#   sh analysis/tools/drive/shot.sh "<label>" "<SACRED_AUTO>" "<ms,ms,...>" [seconds]
 #
 # ponytail: one run per invocation -- the game grabs the display.
 
 set -u
-ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 LOG="$HOME/.lgp/sacred/debug.log"
 LABEL=$1
 SCRIPT=$2

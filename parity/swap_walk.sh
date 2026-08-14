@@ -5,7 +5,7 @@
 # regions=0. This harness proves the supported OZELT1 camp route instead.
 set -u
 
-ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 PORT="$ROOT/godot-port"
 EVIDENCE="$ROOT/analysis/evidence/p6-uat/06-06"
 mkdir -p "$EVIDENCE"

@@ -3,7 +3,7 @@
 
     SACRED_PROF=1 ... play.sh          -> /tmp/sacred-eip.bin
                                           /tmp/sacred-maps.txt (dumped in-process)
-    python3 analysis/tools/eiphist.py [first_frac] [last_frac]
+    python3 analysis/tools/binary/eiphist.py [first_frac] [last_frac]
 
 Prints a module histogram for an early slice (normal running) and a late slice
 (the phase under investigation), plus the hottest addresses of the late slice

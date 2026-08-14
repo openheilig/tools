@@ -7,10 +7,10 @@
 # been wrong twice (AGENTS.md "CURRENT BLOCKER").  This script measures the
 # real timeline instead of assuming one.
 #
-#   sh analysis/tools/log_timeline.sh [seconds] [play.sh flags...]
+#   sh analysis/tools/live/log_timeline.sh [seconds] [play.sh flags...]
 
 set -u
-ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 LOG="$HOME/.lgp/sacred/debug.log"
 DUR=${1:-150}
 [ $# -gt 0 ] && shift

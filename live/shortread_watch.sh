@@ -1,8 +1,8 @@
 #!/bin/sh
 # Report every short read out of the engine's save/world stream.
 #
-#   sh analysis/tools/shortread_watch.sh [play.sh flags...]
-#   SW_SECS=180 sh analysis/tools/shortread_watch.sh --nosound
+#   sh analysis/tools/live/shortread_watch.sh [play.sh flags...]
+#   SW_SECS=180 sh analysis/tools/live/shortread_watch.sh --nosound
 #
 # ---------------------------------------------------------------------------
 # Why a breakpoint here and not a log grep.
@@ -35,7 +35,7 @@
 # ---------------------------------------------------------------------------
 
 set -u
-ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 LOG="$HOME/.lgp/sacred/debug.log"
 OUT=${SW_OUT:-/tmp/shortread.txt}
 SECS=${SW_SECS:-150}

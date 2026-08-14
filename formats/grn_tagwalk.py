@@ -39,8 +39,10 @@ import sys
 PAK_HDR, PAK_IDX = 256, 12
 NAME_LEN = 64
 
-GAME = os.environ.get("SACRED_INSTALL") or os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "../../install")
+# abspath() collapses the `..` lexically: the workspace reaches these tools
+# through the analysis/tools symlink, and the kernel would resolve `..` past it.
+GAME = os.environ.get("SACRED_INSTALL") or os.path.abspath(os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "../../../install"))
 
 ROOT_TAG = 0xCA5E0000
 TERMINATOR_TAG = 0xCA5EFFFF
@@ -81,7 +83,7 @@ HEADER_READ_CAP = 4096
 # is a SEPARATE structure from the header chain walk_entry() reads above --
 # reached at section_offset = magic_off + SECTION_OFF_DELTA, a count (u32)
 # followed by an array of {tag, rel, children} triples. Independently
-# written for this file, from analysis/tools/grn_motion.py's own measured
+# written for this file, from analysis/tools/formats/grn_motion.py's own measured
 # byte layout (05-02, VERIFIED corpus-wide) and godot-port/sacred.gd's own
 # independently-written twin (05-05 Task 1) -- never by opening or
 # translating either one; see the module docstring's independence rationale

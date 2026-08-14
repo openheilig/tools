@@ -31,7 +31,8 @@ import os
 import struct
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'formats'))
 from grn_tagwalk import (  # noqa: E402
     GAME, ROOT_TAG, classify, derive_length, md5, pak_index3, read_name,
 )

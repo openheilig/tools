@@ -7,13 +7,13 @@
 # AGENTS.md "Driving the game").  The log is the entire oracle: if a click or
 # key does anything at all, the engine logs it.
 #
-#   sh analysis/tools/probe_ui.sh "<label>" "<SACRED_AUTO script>" [seconds]
+#   sh analysis/tools/drive/probe_ui.sh "<label>" "<SACRED_AUTO script>" [seconds]
 #
 # ponytail: one run per invocation, no parallelism -- the game grabs the
 # display and two copies would fight over it.
 
 set -u
-ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 LOG="$HOME/.lgp/sacred/debug.log"
 LABEL=$1
 SCRIPT=$2

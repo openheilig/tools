@@ -1,8 +1,8 @@
 #!/bin/sh
 # Measure how reliably the game loads a world, and count `CalcResults FAILED`.
 #
-#   sh analysis/tools/race_sweep.sh [runs] [extra play.sh flags...]
-#   sh analysis/tools/race_sweep.sh 10 --nosound
+#   sh analysis/tools/parity/race_sweep.sh [runs] [extra play.sh flags...]
+#   sh analysis/tools/parity/race_sweep.sh 10 --nosound
 #
 # ---------------------------------------------------------------------------
 # Read this before trusting a number out of this script.
@@ -20,7 +20,7 @@
 # ---------------------------------------------------------------------------
 
 set -u
-ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 LOG="$HOME/.lgp/sacred/debug.log"
 CAP=${SWEEP_CAP:-150}          # seconds per run; a good run reaches gameplay by ~65s
 PLAY_SECS=${SWEEP_PLAY:-70}    # seconds to keep playing AFTER the world appears
@@ -70,7 +70,7 @@ SCRIPT=${SWEEP_SCRIPT:-"20000 click 512 287; 26000 click 110 420; 30000 click 60
 #
 #   SWEEP_MARKER='cUI_Manager::tooltipCreate' \
 #   SWEEP_SCRIPT='20000 click 514 414; 26000 click 455 353; 30000 click 866 300; 34000 click 422 440' \
-#     sh analysis/tools/race_sweep.sh 3 --nosound
+#     sh analysis/tools/parity/race_sweep.sh 3 --nosound
 #
 # (that loads install/save/game01.pak from the main menu; the 34s click is the
 # "Load game!" confirmation OK, and omitting it leaves the run sitting on the

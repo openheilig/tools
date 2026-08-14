@@ -1,6 +1,5 @@
 #!/bin/sh
-# replay_diff.sh -- the record/replay harness's single gate (04-01-PLAN.md
-# Task 2).
+# replay_diff.sh -- the record/replay harness's single determinism gate.
 #
 # Runs a record pass (godot --record=... --dump=A) and a plain replay pass
 # (godot --replay=... --dump=B) and compares A and B with /usr/bin/diff.
@@ -13,7 +12,7 @@
 #
 # --control additionally replays the same recording three times more, each
 # time with one of world/replay.gd's three perturbation flags (a cell
-# nudge, a skipped input line, and -- Plan 04-02 Task 3 -- a window-origin
+# nudge, a skipped input line, and a window-origin
 # offset that couples PathWindow's origin to something outside the actor's
 # own cell, all off by default, all selected by flag only -- never by a
 # source edit) and asserts the OPPOSITE of the clean comparison: the diff
@@ -42,8 +41,8 @@ MODE="${1:-}"
 TICKS=600
 
 # Tick 5 sits inside the scripted intent's first, straight-x phase, where
-# the actor is confirmed moving on every single tick in this window (see
-# 04-01-SUMMARY.md) -- never a tick where the actor is already stopped
+# the actor is confirmed moving on every single tick in this window
+# (measured) -- never a tick where the actor is already stopped
 # against a wall, which would let a skipped-intent perturbation coincide
 # with the unperturbed outcome by accident and certify nothing.
 PERTURB_TICK=5

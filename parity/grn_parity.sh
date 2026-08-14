@@ -2,14 +2,14 @@
 # grn_parity.sh -- cross-checks the two INDEPENDENTLY WRITTEN .GRN tag
 # walkers at corpus level:
 #
-#   godot-port/grnwalk.gd --corpus       (GDScript, Plan 01/02)
-#   analysis/tools/formats/grn_tagwalk.py --corpus  (Python, Plan 03, written from
-#                                             03-RESEARCH.md's byte evidence
+#   godot-port/grnwalk.gd --corpus       (GDScript, written first)
+#   analysis/tools/formats/grn_tagwalk.py --corpus  (Python, written from
+#                                             direct byte evidence
 #                                             alone, never from the GDScript
 #                                             source)
 #
 # The value of this comparison is precisely that the two implementations
-# never read each other -- Plan 03's own header comment states the file was
+# never read each other -- the Python file's own header states it was
 # built from a written specification and direct byte reads of
 # install/pak/models.pak, never by opening or translating grnwalk.gd. If a
 # mismatch is ever found here, DO NOT resolve it by editing either walker to
@@ -18,8 +18,8 @@
 # copying one side onto the other measures nothing.
 #
 # Compares named numbers extracted from each sweep's report, not raw text --
-# the two reports use a different field order for the tagcount line (see
-# 03-PATTERNS.md), so a byte diff would report false mismatches on
+# the two reports use a different field order for the tagcount line, so a
+# byte diff would report false mismatches on
 # formatting alone. Every extraction that comes back empty is a hard
 # failure: two empty extractions would otherwise compare equal and this
 # script would certify agreement while comparing nothing.
@@ -102,9 +102,9 @@ for KEY in entries walkable skipped; do
 done
 
 # The four documented tags only (root/copyright/object/final) -- the leaf
-# tag families and the terminator are out of this comparison's scope; see
-# 03-04-SUMMARY.md for why (the two sides count the terminator tag
-# differently, a known and separately-documented difference, TSV row 397).
+# tag families and the terminator are out of this comparison's scope: the
+# two sides count the terminator tag differently, a known and separately
+# documented difference (findings log row 397).
 for TAG in 0xca5e0000 0xca5e0101 0xca5e0102 0xca5e0103; do
 	GD_LINE=$(/usr/bin/grep -E "^tagcount[[:space:]]+${TAG}[[:space:]]" "$GD_OUT" | /usr/bin/sed -n '1p')
 	PY_LINE=$(/usr/bin/grep -E "^tagcount[[:space:]]+${TAG}[[:space:]]" "$PY_OUT" | /usr/bin/sed -n '1p')

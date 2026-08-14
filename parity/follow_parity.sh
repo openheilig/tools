@@ -1,5 +1,5 @@
 #!/bin/sh
-# follow_parity.sh -- the two pixel gates 04-03-PLAN.md Task 3 asks for.
+# follow_parity.sh -- the two pixel gates for movement parity against retail.
 #
 # Gate 1 (frame does not slip): three captures under Xvfb, all at the
 # middle zoom step, all with the player suppressed so only the terrain and

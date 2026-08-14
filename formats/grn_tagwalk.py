@@ -7,11 +7,11 @@ This is the second, deliberately independent implementation of the tag walk
 (the first lives in `godot-port/`, owned by a sibling task). It is written
 from a written specification and from this module's own direct byte reads of
 `install/pak/models.pak` -- never by opening or translating the GDScript
-walker, and never by reading any Granny SDK or third-party GPL source. See
-the plan this file was built from
-(`.planning/phases/03-granny-grn-tag-walk-then-posed-mesh/03-03-PLAN.md`) for
-the independence rationale: a Python file transliterated from the GDScript
-one would make the later parity diff structurally incapable of failing.
+walker, and never by reading any Granny SDK or third-party GPL source. The
+independence rationale is the project's two-decoder rule
+(`research/method/discipline.md`): a Python file transliterated from the
+GDScript one would make the later parity diff structurally incapable of
+failing.
 
 Two on-disk facts below were re-measured directly against `models.pak` this
 session, using nothing but `struct.unpack_from` and a literal byte search for
@@ -23,7 +23,7 @@ written-specification text, and the `0xCA5E0101` "final" chunk is 36 bytes
 tag-inclusive, not 32. Using the stated 16/32 desyncs the walk after the
 second header tag on real data (verified: it stops at an unrecognised tag
 four bytes early) rather than reaching `0xCA5EFFFF`, so the measured values
-are what this module uses. See `03-03-SUMMARY.md` for the full write-up.
+are what this module uses. `research/formats/granny-grn.md` writes this up.
 
     ./grn_tagwalk.py --entry=589        # one entry's tag, offset, length triples
     ./grn_tagwalk.py --corpus           # sweep all 4993 entries, report the invariant
@@ -79,7 +79,7 @@ MAX_TRIPLES_PER_ENTRY = 4096
 # without ever reading a meaningful fraction of the file per entry.
 HEADER_READ_CAP = 4096
 
-# Flat node-directory constants (Plan 05-05 Task 2 addition). The directory
+# Flat node-directory constants, added with the animation-clip work. The
 # is a SEPARATE structure from the header chain walk_entry() reads above --
 # reached at section_offset = magic_off + SECTION_OFF_DELTA, a count (u32)
 # followed by an array of {tag, rel, children} triples. Independently
@@ -464,7 +464,7 @@ def main():
             raise SystemExit(f"unknown argument: {arg}")
     # --clip=N (optionally with --falsify=N) takes precedence: it is the one
     # combination this file's callers actually invoke together (see the
-    # module docstring and 05-05-PLAN.md Task 2's verify block). --entry=/
+    # module docstring). --entry=/
     # --corpus/bare --falsify= keep their pre-existing single-argument
     # behaviour unchanged.
     if clip_index is not None:

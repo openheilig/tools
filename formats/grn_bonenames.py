@@ -55,10 +55,9 @@ around one 272-byte span.
     ./grn_bonenames.py --entry=2847
     ./grn_bonenames.py --harness       # 7 candidate arms + 1 control, both entries
     ./grn_bonenames.py --control       # the scrambled control arm alone
-    ./grn_bonenames.py --report        # full verdict + bone tables, for 05-04
+    ./grn_bonenames.py --report        # full verdict + bone tables
 
-05-09 GAP CLOSURE (mesh-skinning classifier for P3's scope -- see
-05-09-PLAN.md): mesh-skinning data (FormMeshBone/MeshWeights) is tested as a
+MESH-SKINNING CLASSIFIER (P3 scope only): mesh-skinning data (FormMeshBone/MeshWeights) is tested as a
 name-independent, structural signal for narrowing which bones predicate P3
 (the light-naming-convention check) judges. Authorised use is P3-scope-only
 (Use A); it is NEVER authorised to drop a bone from a rig/skeleton (Use B),
@@ -87,8 +86,7 @@ MAGIC_OFFSET = {KIND_MESH: 0x4EA, KIND_MOTION: 0x140}
 
 # The flat node directory sits 376 bytes after the chunk-stream root tag, in
 # BOTH kinds (godot-port/sacred.gd SECTION_OFF_MESH=1634, MAGIC_OFF_MESH=0x4EA
-# =1258, 1634-1258=376; confirmed for kind=65 in this plan's planning
-# session -- see 05-01-PLAN.md <planning_measurements>).
+# =1258, 1634-1258=376; confirmed for kind=65 by direct measurement).
 SECTION_DELTA = 376
 DIR_OFF = 16
 NODE_STRIDE = 12
@@ -1148,14 +1146,14 @@ def cmd_harness():
 
 
 # --------------------------------------------------------------------------
-# The full 05-09 verdict: run_harness()'s mechanical CONFIRMED/REFUTED, PLUS
+# The full verdict: run_harness()'s mechanical CONFIRMED/REFUTED, PLUS
 # the p3_mode gate and the inverted-narrowing counterfactual. Either of
-# those failing REFUTES the whole plan -- there is no partial credit
+# those failing REFUTES the whole classifier -- there is no partial credit
 # ("nearly passes" is REFUTED).
 #
 # attachment_risk is measured and reported separately (entry_attachment_risk()
 # below) but does NOT gate this verdict. Scope resolution (human decision,
-# 2026-08-10, recorded in full in 05-09-SUMMARY.md and findings row 603):
+# 2026-08-10, recorded in full in findings log row 603):
 # over-rejection only matters for Use B (dropping a bone from a rig), which
 # is NEVER authorised by this classifier regardless of verdict. For Use A
 # (narrowing which bones P3 JUDGES), an over-rejected bone such as
@@ -1202,8 +1200,8 @@ def full_verdict():
     non-light bone excluded from P3's scope changes no P3 outcome) and
     matters only for Use B (dropping a bone from a rig), which this
     classifier never authorises regardless of verdict. See the module
-    docstring's 05-09 section and 05-09-SUMMARY.md for the full Use A/Use B
-    boundary and the human decision that scoped this function this way."""
+    docstring's classifier section, and findings log row 603, for the full
+    Use A/Use B boundary and the decision that scoped this function."""
     censuses, per_entry_results, harness_verdict, documented_confirmed = run_harness()
 
     gate_ok = True

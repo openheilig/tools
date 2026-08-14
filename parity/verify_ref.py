@@ -14,29 +14,28 @@ verify.gd's layering check fact-for-fact -- see LAYER_RULES/layer_check().
 import hashlib, math, os, struct, sys, zlib
 
 # grn_tagwalk.py shares this directory -- imported, never translated, so the
-# corpus-level independence Plan 03 established (03-03-SUMMARY.md) is not
-# undone by a second hand-written walker living in this file too.
+# corpus-level independence the two walkers established is not undone by a
+# second hand-written walker living in this file too.
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'formats'))
 import grn_tagwalk
 import grn_bonenames
 
 SECTORS = [(49, 49), (50, 50), (51, 51), (0, 15), (14, 19), (31, 24), (99, 99)]
-# Deviation from 04-01-PLAN.md Task 3's literal text (documented in
-# 04-01-SUMMARY.md): mirrors godot-port/verify.gd's WALKABLE_SECTORS --
-# reusing SECTORS directly would leave every sampled sector at zero
-# regions (measured, not assumed), which the task's own acceptance
-# criteria ("non-zero region/open count", "md5 discriminates") make
-# impossible to satisfy that way. A dedicated sample list follows this
+# A separate list, not SECTORS: mirrors godot-port/verify.gd's
+# WALKABLE_SECTORS -- reusing SECTORS directly would leave every sampled
+# sector at zero regions (measured, not assumed), which makes the two things
+# this layer has to show -- a non-zero region/open count, and an md5 that
+# discriminates -- impossible to satisfy that way. A dedicated sample list follows this
 # file's existing SECTORS/TEXTURES/MODELS convention rather than mutating
-# SECTORS and disturbing the `sector` fact line Phase 1-3 already rely on.
+# SECTORS and disturbing the `sector` fact line the earlier layers rely on.
 WALKABLE_SECTORS = [(64, 39), (4, 37), (52, 51), (0, 15), (14, 19), (31, 24), (99, 99)]
 TEXTURES = [0, 1, 2, 1000, 5000, 20000]
-# BAT.GRN, GLADIATOR.GRN, GLAD_SA5_SHOULDER.GRN -- 03-PATTERNS.md's sampled
-# set, mirrored verbatim by godot-port/verify.gd's MODELS constant.
+# BAT.GRN, GLADIATOR.GRN, GLAD_SA5_SHOULDER.GRN -- the sampled set, mirrored
+# verbatim by godot-port/verify.gd's MODELS constant.
 MODELS = [1, 589, 203]
 # One attack, one idle, one run, two bone counts between them -- mirrored
-# verbatim by godot-port/verify.gd's MOTIONS constant (Plan 05-05 Task 2).
+# verbatim by godot-port/verify.gd's MOTIONS constant.
 MOTIONS = [2847, 2899, 2903]
 PAK_HDR, PAK_IDX = 256, 12
 KEY_HDR, KEY_REC = 256, 768
@@ -442,8 +441,8 @@ def main():
             print("sector\t%d,%d\tlen=%d\tmd5=%s" % (gx, gy, len(d), md5(d)))
 
         # Walkability layer -- one fact line per sampled sector, between the
-        # sector block and the tiles block on BOTH sides (04-01-PLAN.md
-        # Task 3). Re-reads each sector's stream rather than reusing `d`
+        # sector block and the tiles block on BOTH sides. Re-reads each
+        # sector's stream rather than reusing `d`
         # from the loop above -- that loop's `d` falls out of scope per
         # iteration by design, and re-fetching here keeps this block a
         # self-contained mirror of verify.gd's own second pass over SECTORS.
@@ -495,7 +494,7 @@ def main():
 
         # Tag-walk layer only -- kind, derived length, tag count, triples md5.
         # Never a hash of decoded mesh data: no independent Python mesh decoder
-        # exists to make such a hash meaningful (03-04-PLAN.md, Pitfall 8).
+        # exists to make such a hash meaningful.
         # Reuses grn_tagwalk.py's per-entry walk rather than a third
         # implementation; grn_tagwalk.py itself is untouched by this file.
         models_file_size = os.fstat(mf.fileno()).st_size
@@ -512,8 +511,8 @@ def main():
             # sacred.gd's Sacred.Models.walk() -- the trusted GDScript walker --
             # never appends the terminator tag itself as a triple; it breaks out
             # of the inner loop on sight of 0xCA5EFFFF, before appending.
-            # grn_tagwalk.py's own walk_entry() does append it (03-03-SUMMARY.md
-            # key-decision #3, TSV row 397) -- a real, already-documented
+            # grn_tagwalk.py's own walk_entry() does append it (findings log
+            # row 397) -- a real, already-documented
             # difference between the two walkers' own diagnostic output that
             # this fact line does not paper over by editing either walker.
             # Instead this line's own tags=/md5= fields are defined, once, to
@@ -572,7 +571,7 @@ def main():
 
         # Bone-name layer -- the Python side of godot-port/verify.gd's
         # `bonename` fact line, printed directly after the bones block on
-        # BOTH sides (05-10-PLAN.md, discharging 05-04's halt).
+        # BOTH sides.
         for idx in MODELS:
             names = bone_names_by_idx.get(idx, [])
             named = sum(1 for n in names if n != "")
@@ -583,7 +582,7 @@ def main():
 
         # Animation-clip layer -- the Python side of godot-port/verify.gd's
         # `motion` fact line, printed between the bones block and the layer
-        # check on both sides (Plan 05-05 Task 2).
+        # check on both sides.
         #
         # Reaches the clip through grn_tagwalk.clip_decode(), the SAME
         # function --clip=N calls -- not a second implementation written

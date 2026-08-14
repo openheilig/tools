@@ -4,7 +4,7 @@ inside `models.pak`.
 
 Personal-use interoperability work on legally-owned media. Output stays local.
 
-WHAT THIS IS FOR. `godot-port/sacred.gd::bones()` decodes the 68-byte bone
+WHAT THIS IS FOR. `godot-port/formats/models.gd::bones()` decodes the 68-byte bone
 record correctly but returns an honestly EMPTY `name` field: the record
 itself carries no name, and a name must instead be resolved through a
 separate object/string chain elsewhere in the entry. This probe walks that
@@ -79,13 +79,13 @@ MODELS_PATH = os.path.join(GAME, "pak", "models.pak")
 MAGIC = 0xCA5E0000
 
 # magic_offset(kind) mirrors Sacred.Models.MAGIC_OFF_MESH / MAGIC_OFF_MOTION
-# (godot-port/sacred.gd) and grn_tagwalk.py's MAGIC_OFFSET -- same numbers,
+# (godot-port/formats/models.gd) and grn_tagwalk.py's MAGIC_OFFSET -- same numbers,
 # re-declared here rather than imported so this probe's directory-section
 # math is self-contained and legible on its own.
 MAGIC_OFFSET = {KIND_MESH: 0x4EA, KIND_MOTION: 0x140}
 
 # The flat node directory sits 376 bytes after the chunk-stream root tag, in
-# BOTH kinds (godot-port/sacred.gd SECTION_OFF_MESH=1634, MAGIC_OFF_MESH=0x4EA
+# BOTH kinds (godot-port/formats/models.gd SECTION_OFF_MESH=1634, MAGIC_OFF_MESH=0x4EA
 # =1258, 1634-1258=376; confirmed for kind=65 by direct measurement).
 SECTION_DELTA = 376
 DIR_OFF = 16
@@ -94,7 +94,7 @@ MAX_NODES = 1 << 20
 
 # Directory node tags this probe reads. Values from the AoM Model Plugin's
 # GrnNodeType.cs (row 585); names likewise. Every one of these also appears,
-# independently, on sacred.gd's own already-shipped geometry/skeleton decode
+# independently, on models.gd's own already-shipped geometry/skeleton decode
 # (0505/0506/0507/0508/0702/0C09/0C0A), which row 585 notes as an
 # independent confirmation of the tag table.
 TAG_SKELETON_SECTION = 0xCA5E0507
@@ -113,7 +113,7 @@ TAG_FORM_POSE_WEIGHTS = 0xCA5E0C05
 
 # Mesh-skinning tags (05-09 gap closure). Same AoM Model Plugin table (row
 # 585) as every other tag above; independently confirmed by godot-port/
-# sacred.gd's own already-shipped, zero-slack mesh_weights() decode (lines
+# models.gd's own already-shipped, zero-slack mesh_weights() decode (lines
 # 1569-1708), which this module's mesh-side functions below re-derive from
 # scratch in Python idiom -- never transliterated from that GDScript.
 TAG_MESH = 0xCA5E0601
@@ -176,7 +176,7 @@ def print_entry_report(path, entries, file_size, index):
 
 # --------------------------------------------------------------------------
 # Directory section layer -- mirrors Sacred.Models._directory()/_span()/
-# _direct_children() in godot-port/sacred.gd, reimplemented independently in
+# _direct_children() in godot-port/formats/models.gd, reimplemented independently in
 # Python idiom (never by reading that file's source into this one).
 # --------------------------------------------------------------------------
 
@@ -246,7 +246,7 @@ def direct_children(dir_, j):
 
 def child_with_tag(dir_, j, tag):
     """First node carrying `tag` anywhere in j's declared descendant span
-    (NOT one-level-only -- mirrors sacred.gd::_child_with_tag(), which
+    (NOT one-level-only -- mirrors models.gd::_child_with_tag(), which
     deliberately searches the whole subtree because a Mesh's vertices/
     normals/triangles/weights children sit at varying depths beneath it,
     unlike direct_children()'s one-level walk used for RenderPass-shaped
@@ -480,7 +480,7 @@ def form_pose_weights_raw(buf, sec, dir_):
 # Mesh-skinning census (05-09 gap closure). Structural, name-independent
 # ingredients for the new hypothesis under test: a bone that carries real
 # skin weight, or is an ancestor of one, is skeletal; nothing here reads a
-# name, a string or a DataExtension. Reimplemented from sacred.gd's own
+# name, a string or a DataExtension. Reimplemented from models.gd's own
 # measured mesh_weights() layout (lines 1569-1708), not transliterated.
 # --------------------------------------------------------------------------
 
@@ -489,7 +489,7 @@ def form_mesh_bone_lists(buf, sec, dir_, bone_count):
     payload of an 0xCA5E0C0A FormMeshBone direct child (mesh-local bone
     index -> file bone index). A value outside 0..bone_count-1 is refused,
     not clamped -- prints a `refuse` line and returns None, mirroring
-    sacred.gd::mesh_weights()'s own push_error-and-return-[] behaviour for
+    models.gd::mesh_weights()'s own push_error-and-return-[] behaviour for
     the same condition."""
     out = []
     for j in range(len(dir_)):
@@ -510,7 +510,7 @@ def form_mesh_bone_lists(buf, sec, dir_, bone_count):
 
 def mesh_weight_influence(buf, sec, dir_, lists):
     """Walks every 0xCA5E0601 Mesh node that also has vertices/normals/
-    triangles children (the same accept test sacred.gd's mesh_arrays() and
+    triangles children (the same accept test models.gd's mesh_arrays() and
     mesh_weights() already use, so mesh ordering can't drift), reads its
     0xCA5E0702 MeshWeights child as {count, highest, unknown} then count x
     {influences, influences x (local bone, weight)}, and pairs it to the

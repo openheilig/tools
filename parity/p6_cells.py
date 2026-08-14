@@ -13,7 +13,7 @@ against a capture.
 Built for plan 06-02's pixel-to-cell calibration: the retail fire frame
 shows the player near a building's door; this tool says which world cells
 the door and its steps are, through verify_ref.py's INDEPENDENT region
-parser (never a translation of godot-port/sacred.gd).
+parser (never a translation of godot-port/formats/regions.gd).
 """
 
 import os

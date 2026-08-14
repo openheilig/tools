@@ -84,7 +84,7 @@ HEADER_READ_CAP = 4096
 # reached at section_offset = magic_off + SECTION_OFF_DELTA, a count (u32)
 # followed by an array of {tag, rel, children} triples. Independently
 # written for this file, from analysis/tools/formats/grn_motion.py's own measured
-# byte layout (05-02, VERIFIED corpus-wide) and godot-port/sacred.gd's own
+# byte layout (05-02, VERIFIED corpus-wide) and godot-port/formats/models.gd's own
 # independently-written twin (05-05 Task 1) -- never by opening or
 # translating either one; see the module docstring's independence rationale
 # and D-21/D-23's licence boundary (neither Iris1 nor the AoM Model Plugin
@@ -282,7 +282,7 @@ def clip_decode(f, entries, index, file_size, desync=0):
     only by --falsify to prove the zero-slack reconciliation actually
     depends on real byte alignment, not vacuously passing.
 
-    Returns None on any structural failure (mirrors sacred.gd's
+    Returns None on any structural failure (mirrors models.gd's
     push_error-and-return-empty posture)."""
     kind, offset, _field3 = entries[index]
     true_len = derive_length(entries, index, file_size)

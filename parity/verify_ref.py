@@ -42,7 +42,7 @@ KEY_HDR, KEY_REC = 256, 768
 SECT, CELL, NAME = 64, 32, 32
 
 # Region table constants, independently derived from the byte layout (not a
-# translation of godot-port/sacred.gd's Regions class -- see region_list()).
+# translation of godot-port/formats/regions.gd -- see region_list()).
 REGION_TABLE_OFF = NAME + SECT * SECT * CELL
 REGION_REC = 36
 REGION_TYPE = 6
@@ -323,12 +323,12 @@ def bone_facts(buf, names=None):
 
 def region_list(stream, gx, gy):
     """Independent parse of a sector stream's region table -- reads the byte
-    layout directly rather than translating godot-port/sacred.gd's
-    Regions._init(). Mirrors its validity conditions exactly (declared grid
+    layout directly rather than translating godot-port/formats/regions.gd's
+    _init(). Mirrors its validity conditions exactly (declared grid
     byte size == width*height*CELL, grid fits inside the stream, anchor
     falls inside the owning sector) and its skip of the leading zero-sized
     origin marker, but derives none of them from that file's source text --
-    only from the field offsets AGENTS.md/sacred.gd document.
+    only from the field offsets AGENTS.md and that file document.
 
     Returns a list of (anchor_x, anchor_y, w, h, grid_bytes) tuples in table
     order. A record whose type word is not REGION_TYPE ends the scan (not a
@@ -508,7 +508,7 @@ def main():
                     idx, name, kind, true_len, grn_tagwalk.md5(b"")))
                 continue
             triples, _stop_reason = grn_tagwalk.walk_entry(mf, off, magic_off, true_len)
-            # sacred.gd's Sacred.Models.walk() -- the trusted GDScript walker --
+            # formats/models.gd's walk() -- the trusted GDScript walker --
             # never appends the terminator tag itself as a triple; it breaks out
             # of the inner loop on sight of 0xCA5EFFFF, before appending.
             # grn_tagwalk.py's own walk_entry() does append it (findings log
@@ -557,7 +557,7 @@ def main():
         # This is a genuine second implementation, not a translation: the node
         # directory walk, the 68-byte bone decode, the quaternion-to-matrix step and
         # the chain composition below are all written here, in float64, against the
-        # bytes. sacred.gd does the same job in GDScript against Godot's float32
+        # bytes. formats/models.gd does the same job in GDScript against Godot's float32
         # Transform3D. See the maxmag note in bone_facts() for the one place that
         # difference is visible.
         for idx in MODELS:

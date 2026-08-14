@@ -6,7 +6,7 @@ against Sacred's own bytes rather than borrowed from an outside template.
 Personal-use interoperability work on legally-owned media. Output stays local.
 
 WHAT THIS IS FOR. R1.5 needs a named clip's per-bone transform tracks, and
-three things stood between `godot-port/sacred.gd` and that decode: the flat
+three things stood between `godot-port/formats/models.gd` and that decode: the flat
 node directory's position inside a `kind=65` entry was unmeasured; the
 per-bone record's field layout was a hypothesis borrowed from an outside
 reader; and an earlier research session concluded tag `0xCA5E1204` was
@@ -23,7 +23,7 @@ output and the findings rows this plan appends).
 WHAT THE BYTES SAY (Task 1, established below and swept over the whole
 4993-entry corpus): `section_offset(entry) = magic_offset(entry) + 376`
 reaches a valid flat node directory in BOTH kinds. `SECTION_OFF_DELTA = 376`
-is not a new magic value -- it reconciles the constant `sacred.gd` already
+is not a new magic value -- it reconciles the constant `models.gd` already
 ships for kind=64 (`SECTION_OFF_MESH = 1634`, `MAGIC_OFF_MESH = 1258`,
 1634 - 1258 = 376) and extends it to kind=65 (`MAGIC_OFF_MOTION = 320`,
 320 + 376 = 696).
@@ -70,14 +70,14 @@ MODELS_PATH = os.path.join(GAME, "pak", "models.pak")
 
 MAGIC = 0xCA5E0000
 
-# Mirrors Sacred.Models.MAGIC_OFF_MESH / MAGIC_OFF_MOTION (godot-port/sacred.gd)
+# Mirrors Sacred.Models.MAGIC_OFF_MESH / MAGIC_OFF_MOTION (godot-port/formats/models.gd)
 # and grn_tagwalk.py's MAGIC_OFFSET -- same numbers, re-declared here (as
 # grn_bonenames.py also does) so this probe's directory-section math is
 # self-contained and legible on its own.
 MAGIC_OFFSET = {KIND_MESH: 0x4EA, KIND_MOTION: 0x140}
 
 # The flat node directory sits 376 bytes after the root tag, in BOTH kinds.
-# sacred.gd: SECTION_OFF_MESH=1634, MAGIC_OFF_MESH=1258, 1634-1258=376 -- so
+# models.gd: SECTION_OFF_MESH=1634, MAGIC_OFF_MESH=1258, 1634-1258=376 -- so
 # this is a reconciliation of an already-verified constant, not a new one.
 # --sweep below is what establishes it holds for kind=65 too, corpus-wide.
 SECTION_OFF_DELTA = 376
@@ -87,7 +87,7 @@ MAX_NODES = 1 << 20
 
 # Directory node tags this probe reads or names. Values and names from the
 # AoM Model Plugin's GrnNodeType.cs (findings row 585); every one of these
-# also appears on sacred.gd's own shipped geometry/skeleton decode.
+# also appears on models.gd's own shipped geometry/skeleton decode.
 TAG_BONE = 0xCA5E0506
 TAG_SKELETON_SECTION = 0xCA5E0507
 TAG_BONE_SECTION = 0xCA5E0508
@@ -179,7 +179,7 @@ def print_entry_report(path, entries, file_size, index):
 
 # --------------------------------------------------------------------------
 # Directory section layer -- mirrors Sacred.Models._directory()/_span()/
-# _direct_children() in godot-port/sacred.gd, reimplemented independently in
+# _direct_children() in godot-port/formats/models.gd, reimplemented independently in
 # Python idiom (this project's own code; not the GPL/no-licence sources).
 # --------------------------------------------------------------------------
 
@@ -509,7 +509,7 @@ def constant_trailer(slacks):
     return None
 
 
-# sacred.gd::bones() uses 0.001 for bind-pose bone quaternions -- not reused
+# models.gd::bones() uses 0.001 for bind-pose bone quaternions -- not reused
 # as-is here. Measured, not borrowed: at DOCUMENTED_LAYOUT, per-clip max |mag-1| over
 # every AnimationTransformTrackKeys quaternion is 0.0611 (entry 2847),
 # 0.0330 (2903), 0.00086 (2899) -- endpoints of every track (first/last

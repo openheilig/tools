@@ -1,8 +1,9 @@
-# DEFAULT DENY. See README.md.
+# DEFAULT DENY. This repo is publishable; the workspace it runs against is not.
 #
 # Only tools we wrote. No third-party binaries (Ghidra, innoextract: those live
-# in ../../Sacred Gold/analysis/vendor/ and are reachable here through the
-# untracked ./vendor symlink), no compiled artefacts, no captured game data.
+# in the private workspace at ../donotpublish/analysis/vendor/ and are reachable
+# here through the untracked ./vendor symlink), no compiled artefacts, and no
+# captured game data.
 #
 # Allowlist, not blocklist: a blocklist fails open. To track a new file type,
 # add a "!" line and think about what is in it first.

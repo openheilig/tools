@@ -56,6 +56,15 @@ and `SACRED_PORT` override the guess in the Python tools that take one.
 Third-party binaries (Ghidra, innoextract) are **not** in this repo. Compiled
 output (`live/altest`, `shim/*.so`) is regenerable and untracked.
 
+## Related
+
+This is one of three repositories:
+
+- [engine](../engine) — the reimplementation: an open Sacred Gold engine on
+  Godot 4.7 that reads your own retail install.
+- [research](../research) — what the formats are, and how each finding was
+  established.
+
 ## Licence
 
 MIT — see [LICENSE](LICENSE). Covers this source only; it grants no rights in

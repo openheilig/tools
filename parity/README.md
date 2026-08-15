@@ -28,6 +28,18 @@ returns a verdict that a human did not choose.
 trusting a number it produces — the failure mode was the instrument, not the
 engine.
 
+
+| Harness | Verdict | Has its own control |
+|---|---|---|
+| `verify_parity.sh` | exit 0/1 | yes — fails if the walkable sample degrades to the zero-region sectors |
+| `grn_parity.sh` | exit 0/1 | the name digest, added when truncating every name still passed |
+| `replay_diff.sh` | exit 0/1 | yes, and the best of them — a perturbation must change the outcome at the exact injected tick, and a missing recording must fail loudly |
+| `race_sweep.sh` | prints, no exit code | no — its metric has been invalidated four times; never compare a new sweep to an old table |
+
+Every harness here has been mutation-tested: a deliberate change to one side
+must make it say FAIL. A parity gate that cannot detect a difference is worse
+than no gate, because it is quoted as evidence.
+
 ## Running them
 
 ```sh

@@ -9,18 +9,34 @@ Common header:
 
 Two layouts follow, told apart by whether the count tiles the remaining bytes:
 
-  FIXED  (creature 86, weapon 322, sndprofiles 196, tiles 76):
+  FIXED  (creature 86):
       0x100  record[count], stride = (filesize - 256) / count
       Record 0 is a reserved all-zero null slot. creature.pak's 86-byte
       stride is the same 0x56 the 2.30 binary uses in TypeManager::get, so
       an index of 0 lands on that null record -- which is what makes
       `cCreatureHero::CalcResults () type=0 FAILED!` fire.
 
-  BLOB   (models, texture, sound):
+  BLOB   (models, texture, sound, sndprofiles, tiles, items, mixed):
       0x100  struct { u32 flags; u32 offset; u32 size; } [count]
       offset is absolute into the file; entries are laid out contiguously.
-      flags 0x04 = TGA, 0x40 = Granny .GRN, 0x20 = raw RIFF/WAVE.
+      flags 0x04 = TGA, 0x40 = Granny .GRN, 0x20 = raw RIFF/WAVE,
+      0x21 = Ogg Vorbis (sound.pak is BOTH -- the flag picks the codec,
+      1:1 over all 6598 payloads), 0x23 = sndprofiles, 0x42 = tiles.
       Named payloads begin with a NUL-padded name, raw ones do not.
+
+  DO NOT tell these apart by arithmetic. For a blob pak with a uniform
+  payload, index(12) + payload(N) divides the file exactly the same way a
+  FIXED stride of (N+12) does, so both readings "consume the file" and the
+  wrong one looks proved: sndprofiles 184+12 = 196, tiles 64+12 = 76.
+  Discriminate by CONTENT -- read entry 0 as (flags, offset, size) and check
+  it lands past the index and inside the file. Measured 2026-08-16:
+  sndprofiles 8192/8192 valid, tiles 90132/90132 valid (both blob);
+  creature 0/474 (genuinely fixed).
+
+  weapon.pak is neither: it is TWO parallel fixed tables sharing one count,
+  4883 x 258 B from 0x100 then 4883 x 64 B from 0x133966. The old "322 B"
+  reading is their sum. A German display name sits at +0x28 of the 258-byte
+  record in 81.3% of them; under stride 322 the best offset reaches 5.0%.
 
 Usage:
     python3 pak.py <file.pak>              header, layout, first entries

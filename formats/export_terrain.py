@@ -67,8 +67,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--center", default="50,50")
     ap.add_argument("--radius", type=int, default=1)
-    ap.add_argument("--game", default=os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../install")))
-    ap.add_argument("--out", default=os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../godot-port/data")))
+    ap.add_argument("--game", default=os.environ.get("SACRED_INSTALL") or os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../../../install")))
+    ap.add_argument("--out", default=os.path.join(os.environ.get("SACRED_PORT") or os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../../../godot-port")), "data"))
     a = ap.parse_args()
 
     cx, cy = (int(v) for v in a.center.split(","))

@@ -21,6 +21,11 @@
 
 set -u
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
+# A bare checkout resolves ROOT to the wrong place -- these scripts expect to
+# sit at <workspace>/analysis/tools/<group>/. SACRED_INSTALL and SACRED_PORT
+# are the way out when they do not.
+INSTALL="${SACRED_INSTALL:-$ROOT/install}"
+PORT="${SACRED_PORT:-$ROOT/godot-port}"
 OUT=/tmp/look
 SCREEN=${LOOK_SCREEN:-1600x1000x24}
 MODE=${1:-port}
@@ -40,7 +45,7 @@ shot_port() {
     # finish) and exits, so this is a picture of a finished view, not of
     # whatever one frame of loading happened to produce.
     xvfb-run -a -s "-screen 0 $SCREEN" \
-        godot --path "$ROOT/godot-port" -- --shot="$png" "$@" 2>&1 |
+        godot --path "$PORT" -- --shot="$png" "$@" 2>&1 |
         /usr/bin/grep -vE '^$|^Godot Engine|WARNING|^ +at: '
     [ -f "$png" ] || die "look.sh: no PNG written -- see the output above"
     printf '%s\n' "$png"
@@ -52,7 +57,7 @@ shot_retail() {
     shots=${3:-8000,20000}
     dur=${4:-30}
     have magick || die "look.sh: ImageMagick 'magick' missing; shot.sh needs it for PPM->PNG"
-    [ -x "$ROOT/install/play.sh" ] || die "look.sh: $ROOT/install/play.sh not found"
+    [ -x "$INSTALL/play.sh" ] || die "look.sh: $INSTALL/play.sh not found"
     # shot.sh owns the retail capture: it preloads autopilot.so, drives the game
     # from SACRED_AUTO, grabs the back buffer at each SACRED_SHOT timestamp, and
     # converts the PPMs. One run per invocation -- the game grabs the display.

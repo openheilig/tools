@@ -36,6 +36,11 @@
 
 set -u
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
+# A bare checkout resolves ROOT to the wrong place -- these scripts expect to
+# sit at <workspace>/analysis/tools/<group>/. SACRED_INSTALL and SACRED_PORT
+# are the way out when they do not.
+INSTALL="${SACRED_INSTALL:-$ROOT/install}"
+PORT="${SACRED_PORT:-$ROOT/godot-port}"
 LOG="$HOME/.lgp/sacred/debug.log"
 OUT=${SW_OUT:-/tmp/shortread.txt}
 SECS=${SW_SECS:-150}
@@ -84,7 +89,7 @@ rm -f "$LOG" "$OUT"
 # the shim must be loaded or the run behaves differently from a normal one.
 SACRED_PRELOAD=autopilot.so SACRED_AUTO="$SCRIPT" \
 SACRED_RUNNER="gdb --batch -x /tmp/shortread.gdb --args" \
-    "$ROOT/install/play.sh" "$@" > "$OUT" 2>&1 &
+    "$INSTALL/play.sh" "$@" > "$OUT" 2>&1 &
 pid=$!
 
 waited=0

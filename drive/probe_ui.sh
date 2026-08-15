@@ -14,6 +14,11 @@
 
 set -u
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
+# A bare checkout resolves ROOT to the wrong place -- these scripts expect to
+# sit at <workspace>/analysis/tools/<group>/. SACRED_INSTALL and SACRED_PORT
+# are the way out when they do not.
+INSTALL="${SACRED_INSTALL:-$ROOT/install}"
+PORT="${SACRED_PORT:-$ROOT/godot-port}"
 LOG="$HOME/.lgp/sacred/debug.log"
 LABEL=$1
 SCRIPT=$2
@@ -21,7 +26,7 @@ DUR=${3:-40}
 
 rm -f "$LOG"
 SACRED_PRELOAD=autopilot.so SACRED_AUTO="$SCRIPT" \
-    "$ROOT/install/play.sh" --nosound >"/tmp/probe_$$.out" 2>&1 &
+    "$INSTALL/play.sh" --nosound >"/tmp/probe_$$.out" 2>&1 &
 pid=$!
 
 # Sample every 500ms so a log jump can be attributed to the click that caused

@@ -12,7 +12,8 @@ HW, HH = 128, 64  # ponytail: matches the art at 1 cell = 128x64 px; textures ho
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--data", default=os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../godot-port/data")))
+    ap.add_argument("--data", default=os.path.join(os.environ.get("SACRED_PORT") or os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../../../godot-port")), "data"))
     ap.add_argument("--at", default="128,64", help="cell x,y in the exported grid")
     ap.add_argument("--n", type=int, default=10)
     a = ap.parse_args()

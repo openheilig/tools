@@ -28,11 +28,16 @@ on every block; this one resolves 354/379 and names the 25 it misses, which is
 enough to read the file.  Reach for capstone only if those 25 start mattering.
 """
 import json
+import os
 import struct
 import sys
 
-EXE = "windows-disc/eng/extracted/app/Sacred.exe"
-BIN = "install/bin/balance.bin"
+# Both paths are workspace-relative, so run this from the workspace root --
+# or point SACRED_EXE / SACRED_INSTALL somewhere else. `windows-disc/` moved
+# under `builds/` on 2026-08-09 and this went unnoticed for six days,
+# because the table it writes was already committed and nobody re-ran it.
+EXE = os.environ.get("SACRED_EXE") or "builds/windows-disc/eng/extracted/app/Sacred.exe"
+BIN = os.path.join(os.environ.get("SACRED_INSTALL", "install"), "bin/balance.bin")
 POOL_VA, POOL_END, IMAGE_BASE = 0x95B790, 0x95CA78, 0x400000
 BASE = 0xAD448C  # global VA of balance.bin offset 0; pinned by skilllearn1
 

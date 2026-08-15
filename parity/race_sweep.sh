@@ -21,6 +21,11 @@
 
 set -u
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
+# A bare checkout resolves ROOT to the wrong place -- these scripts expect to
+# sit at <workspace>/analysis/tools/<group>/. SACRED_INSTALL and SACRED_PORT
+# are the way out when they do not.
+INSTALL="${SACRED_INSTALL:-$ROOT/install}"
+PORT="${SACRED_PORT:-$ROOT/godot-port}"
 LOG="$HOME/.lgp/sacred/debug.log"
 CAP=${SWEEP_CAP:-150}          # seconds per run; a good run reaches gameplay by ~65s
 PLAY_SECS=${SWEEP_PLAY:-70}    # seconds to keep playing AFTER the world appears
@@ -89,7 +94,7 @@ while [ "$i" -le "$RUNS" ]; do
     pkill -9 -x sacred 2>/dev/null      # a stale instance poisons the next run
     rm -f "$LOG"
     SACRED_PRELOAD=autopilot.so SACRED_AUTO="$SCRIPT" \
-        "$ROOT/install/play.sh" "$@" >/tmp/race_sweep_run.out 2>&1 &
+        "$INSTALL/play.sh" "$@" >/tmp/race_sweep_run.out 2>&1 &
     pid=$!                       # play.sh execs the game, so this is its pid
 
     # Reaching the marker is NOT the end of the run.  Every earlier version

@@ -37,7 +37,12 @@
 set -u
 
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
-PORT="$ROOT/godot-port"
+# A bare checkout resolves ROOT to the wrong place -- these scripts expect to
+# sit at <workspace>/analysis/tools/<group>/. SACRED_INSTALL and SACRED_PORT
+# are the way out when they do not.
+INSTALL="${SACRED_INSTALL:-$ROOT/install}"
+PORT="${SACRED_PORT:-$ROOT/godot-port}"
+PORT="$PORT"
 SCREEN=${FOLLOW_PARITY_SCREEN:-1600x1000x24}
 
 OVERALL_FAIL=0

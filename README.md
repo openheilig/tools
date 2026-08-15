@@ -44,21 +44,39 @@ shim/            32-bit LD_PRELOAD interposers
 granny_oracle/   C probes that call the retail Granny 2.x runtime
 ```
 
-## Running them
+## Running them from a fresh clone — read this first
 
-These scripts locate the retail install relative to their own path:
+**Point two environment variables at your own copies and everything works:**
+
+```sh
+export SACRED_INSTALL=/path/to/your/sacred/install
+export SACRED_PORT=/path/to/the/engine/checkout   # only the tools that drive it
+```
+
+Without them, half of these scripts look in the wrong directory. Measured from
+an actual clone into `/tmp`, before the variables existed: 23 of 40 ran fine,
+16 could not, because they guess the retail install from their own location:
 
 ```sh
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 ```
 
-So they expect to sit at `<workspace>/analysis/tools/<group>/`, with the
-install at `<workspace>/install/`. Clone this repo at
-`<workspace>/analysis/tools`, or symlink it in — running a script from an
-arbitrary checkout path will resolve `ROOT` to the wrong place.
+That guess assumes the layout this project uses internally — the repo sitting
+at `<workspace>/analysis/tools/<group>/` with the install at
+`<workspace>/install/` — so from `/tmp/tools/parity/` it resolves to `/tmp`
+and finds nothing. It does not fail loudly; it looks in the wrong place.
+`SACRED_INSTALL` and `SACRED_PORT` now override that guess in **every** script
+that makes it, and the guess remains the default so nothing changes for anyone
+working inside the workspace.
 
-Two escape hatches, for when it is checked out somewhere else: `SACRED_INSTALL`
-and `SACRED_PORT` override the guess in the Python tools that take one.
+The 23 that never needed either take their input as an argument — `pak.py`,
+`startcode.py`, `parse_trg.py`, `vtables.py`, `ehframe_funcs.py`, `xrefs.py`
+and the rest. Run them with no arguments and they print their usage.
+
+Four tools resolve workspace paths from the **current directory** rather than
+from their own, so run those from the workspace root, or set the variables:
+`binary/opcodes.py`, `binary/opsem.py`, `binary/balance_keymap.py` (also honours
+`SACRED_EXE` for the Windows binary it reads), `live/patch_1002.py`.
 
 ## Not here
 

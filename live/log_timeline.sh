@@ -11,12 +11,17 @@
 
 set -u
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
+# A bare checkout resolves ROOT to the wrong place -- these scripts expect to
+# sit at <workspace>/analysis/tools/<group>/. SACRED_INSTALL and SACRED_PORT
+# are the way out when they do not.
+INSTALL="${SACRED_INSTALL:-$ROOT/install}"
+PORT="${SACRED_PORT:-$ROOT/godot-port}"
 LOG="$HOME/.lgp/sacred/debug.log"
 DUR=${1:-150}
 [ $# -gt 0 ] && shift
 
 rm -f "$LOG"
-"$ROOT/install/play.sh" "$@" >/tmp/log_timeline.out 2>&1 &
+"$INSTALL/play.sh" "$@" >/tmp/log_timeline.out 2>&1 &
 pid=$!
 
 printf '%5s %7s %8s %6s\n' t lines failed menu

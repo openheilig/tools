@@ -12,6 +12,11 @@
 
 set -u
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
+# A bare checkout resolves ROOT to the wrong place -- these scripts expect to
+# sit at <workspace>/analysis/tools/<group>/. SACRED_INSTALL and SACRED_PORT
+# are the way out when they do not.
+INSTALL="${SACRED_INSTALL:-$ROOT/install}"
+PORT="${SACRED_PORT:-$ROOT/godot-port}"
 LOG="$HOME/.lgp/sacred/debug.log"
 LABEL=$1
 SCRIPT=$2
@@ -30,7 +35,7 @@ rm -f "$LOG"
 # Set SHOT_NOSOUND=1 only if you accept re-poisoning the config.
 SND=${SHOT_NOSOUND:+--nosound}
 SACRED_PRELOAD=autopilot.so SACRED_AUTO="$SCRIPT" SACRED_SHOT="$SHOTS" \
-    "$ROOT/install/play.sh" $SND >"$OUT/stdout.txt" 2>&1 &
+    "$INSTALL/play.sh" $SND >"$OUT/stdout.txt" 2>&1 &
 pid=$!
 sleep "$DUR"
 kill "$pid" 2>/dev/null; sleep 2; kill -9 "$pid" 2>/dev/null; wait "$pid" 2>/dev/null

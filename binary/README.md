@@ -18,6 +18,7 @@ its handlers.
 | `opsem.py` | Name opcodes from *behaviour* instead — what the shipped scripts do with them. |
 | `tagwidths.py` | Derive script tag widths by following control flow in the interpreter. |
 | `balance_keymap.py` | Recover the `balance.bin` field map from `Sacred.exe`. |
+| `skillmap.py` | Map each `balance.bin` family prefix (`AK`, `FK`, `W`, …) to the skill it tunes, via `resource id = skill type + 9399` and `FUN_081f686a`'s type-indexed jump table. Self-checks against thirteen ids the case bodies push themselves; exits 1 on a mismatch. |
 | `eiphist.py` | Resolve the autopilot EIP sampler's output against the same run's memory maps. |
 | [`ghidra/`](ghidra/) | Headless decompilation of the same binaries: read a handler as C, dump a jump table, seed a program with the vtable names. |
 

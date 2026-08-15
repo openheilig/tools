@@ -16,6 +16,7 @@
 !.gitignore
 !LICENSE
 !*.py
+!*.java
 !*.sh
 !*.c
 !*.h

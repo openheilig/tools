@@ -54,3 +54,20 @@ independence claim rests on the corpus cross-check, not on the import graph.
 
 ---
 Verified by: Itself -- this directory is what everything else is verified by.
+
+## `log_check.py` — the findings log's own shape
+
+`CLAUDE.md` states the four-field row contract and calls it "checked rather
+than trusted". Nothing checked it: no gate in `checks/` and no tool in
+`tools/` had ever read `autoresearch-results.tsv`, and 539 of its 853 rows do
+not have four fields. `log_check.py` is that check, as a ratchet rather than a
+rewrite -- the legacy count is pinned and may only fall, and the field contract
+is enforced strictly from row 661, where the schema becomes continuous.
+
+```sh
+python3 analysis/tools/parity/log_check.py     # 0 pass, 1 fail
+```
+
+Mutation-tested: a fifth field, a third, `15-08-2026`, an `UPPERCASE_Slug`, a
+duplicate id, an id that goes backwards, and an empty paragraph are each caught.
+

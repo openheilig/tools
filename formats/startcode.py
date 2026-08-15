@@ -28,11 +28,17 @@ u32's own bytes were eaten as the string, and the rest of the record was parsed
 from the wrong offset. Nothing failed, because every unlisted tag is a
 zero-width no-op, so the garbage was absorbed silently.
 
-NUMSTR takes a SECOND string when its u32 is negative (row 838, handler
-disassembled): the sentinel means "the operand is the variable named in the
-string that follows", and the engine resolves that name and overwrites the
+The SEVEN SIBLINGS take a SECOND string when their u32 is negative (row 838,
+handler disassembled): the sentinel means "the operand is the variable named in
+the string that follows", and the engine resolves that name and overwrites the
 sentinel with the result. 22 records across all 16 files; before this they
 absorbed their tail as garbage -- silently, which is the hollow metric again.
+
+0x7a DOES NOT. Its handler is a separate case with no second-string branch;
+what follows the string there is a strncasecmp against "res:" and a base-10
+strtol of the remainder -- the `res:N` operand becoming a resource id. The
+corpus cannot tell the two tails apart (0 of 2053 0x7a operands carry a
+negative u32), so this distinction is read off the interpreter, not fitted.
 
 The honest metric is therefore not "parses" but CONSUMES ITS BODY EXACTLY (or
 stops on an END tag). Excluding opcode 40, whose 80-byte ffffffff struct is not
@@ -104,7 +110,16 @@ def parse(buf, with_tags=False):
                 # back over the sentinel in the SAME numeric slot. So a negative
                 # u32 here is not a value, it is "the operand is the variable
                 # named below". 22 records across all 16 files.
-                if args[-2] & 0x80000000 and p < len(body) and body[p]:
+                # ...but NOT for 0x7a. Its handler 0x0826de28 is a separate
+                # case and its tail is a different thing entirely: it
+                # strncasecmps the string it just wrote against "res:"
+                # (0x086f3d65, 4 chars) and, on a match, copies the remainder
+                # and strtol's it base 10 -- this is where a `res:N` operand
+                # becomes a resource id. There is no second-string branch in it
+                # at all. The corpus cannot see the difference (0 of 2053 0x7a
+                # operands carry a negative u32 against the siblings' 22), so
+                # this gate is read off the interpreter, not fitted.
+                if tag != 0x7a and args[-2] & 0x80000000 and p < len(body) and body[p]:
                     end = body.find(b'\0', p)
                     if end < 0:
                         break    # runs past the record: the engine reads on

@@ -22,6 +22,7 @@ returns a verdict that a human did not choose.
 | `p6_cells.py` | Dump region cell classes in world coordinates around a point. |
 | `pax_diff.py` | Census one PAX section type across the eight-hero corpus. |
 | `race_sweep.sh` | Measure how reliably the game loads a world. |
+| `static_next_check.py` | Pins `nextStaticId` at `static.pak` `+0x1f` by structure — a linked list has no record targeted twice, and a linked record is never a cell head. Runs against the Armalion prerelease too, whose `Static.PAK` is the same `OBJ v1` record. |
 
 ⚠️ `race_sweep.sh` was invalidated four times before being rewritten. Read
 [research/method/discipline.md](../../research/method/discipline.md) before

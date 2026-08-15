@@ -43,6 +43,7 @@ Every script writes `/tmp/gh/out.txt` unless it takes an output path.
 | `Sw.java <func>...` | Every computed jump in a function, with its resolved targets -- finds a switch's real table when a document disagrees. |
 | `BalanceMap.java <addr-in-parser> <out>` | Walk the balance key parser and emit `key -> destination global`. |
 | `LabelGlobals.java <balmap.tsv>` | Label those globals `bal_<Key>`, so decompiled arithmetic reads with the tunables' names in it. |
+| `Callees.java <table> <n> <depth> <maxcallers> <out>` | Like `Impl2` but harvests NAMED callees and their classes rather than strings. Useful only where dispatch is direct -- the script opcode handlers reach C++ objects virtually and return nothing. |
 | `Consumers.java <balmap.tsv> <out> <parser-addr>` | For each global, the functions that read it, and the inverse index -- which function reads the most keys. That inverse index is what identifies a formula. |
 
 ## Seeding a program with names

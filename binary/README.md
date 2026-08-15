@@ -19,6 +19,7 @@ its handlers.
 | `tagwidths.py` | Derive script tag widths by following control flow in the interpreter. |
 | `balance_keymap.py` | Recover the `balance.bin` field map from `Sacred.exe`. |
 | `skillmap.py` | Map each `balance.bin` family prefix (`AK`, `FK`, `W`, …) to the skill it tunes, via `resource id = skill type + 9399` and `FUN_081f686a`'s type-indexed jump table. Self-checks against thirteen ids the case bodies push themselves; exits 1 on a mismatch. |
+| `armasource.py` | Recover Sacred's original source tree (76 files, 259 methods, 80 classes) from the Armalion debug build's assert strings; `--rtti` reports the overlap with retail's class names. |
 | `eiphist.py` | Resolve the autopilot EIP sampler's output against the same run's memory maps. |
 | [`ghidra/`](ghidra/) | Headless decompilation of the same binaries: read a handler as C, dump a jump table, seed a program with the vtable names. |
 

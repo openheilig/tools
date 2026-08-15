@@ -1,5 +1,9 @@
 # parity — the gates
 
+**Status:** Working
+**Purpose:** Return a verdict a human did not choose: two independent decoders agree, or
+they do not.
+
 The project's rule is that a format is understood only when two independently
 written decoders agree, and that a port behaves correctly only when its output
 matches retail pixel for pixel. Nothing here forms an opinion; each tool
@@ -35,3 +39,6 @@ sh analysis/tools/parity/replay_diff.sh
 [`../formats/`](../formats/), and carries a second hand-written walker of its
 own besides. The header comment in that file says which half is which; the
 independence claim rests on the corpus cross-check, not on the import graph.
+
+---
+Verified by: Itself -- this directory is what everything else is verified by.

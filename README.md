@@ -1,5 +1,8 @@
 # OpenHeilig — tools
 
+**Purpose:** The programs this project runs against a Sacred Gold install:
+parsers, binary-analysis helpers, parity gates, harnesses and shims.
+
 The analysis and extraction tools written for this project: format parsers,
 binary-analysis helpers, parity harnesses, and `LD_PRELOAD` shims for driving
 the retail game.
@@ -17,11 +20,17 @@ contain or redistribute game data.
 | prove a decoder is right | [parity/](parity/) |
 | play the game headlessly and capture it | [drive/](drive/) |
 | interpose on the retail process | [shim/](shim/) |
-| ground-truth `.GRN` against the retail runtime | [granny_oracle/](granny_oracle/) |
+| ground-truth `.GRN` against the retail runtime | [granny_oracle/](granny_oracle/) — **blocked**, read its README first |
 
 Nothing here forms a verdict on its own. What the tools *found* is written up
 in [research](../research); the rule that decides when a finding counts is
 [research/method/discipline.md](../research/method/discipline.md).
+
+Every directory README opens with a **Status** and a **Purpose** line and ends
+with the gate that keeps it honest — the same shape the research repo uses,
+described in [research/README.md](../research/README.md). A tools README says
+what its programs do and how to run them; the *investigation* a tool was built
+for belongs in research, not here.
 
 ## Layout
 

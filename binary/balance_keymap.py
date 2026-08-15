@@ -122,7 +122,7 @@ def main():
     print("# %d/%d keys mapped; anchors 6/6 OK" % (len(m), len(m) + len(miss)),
           file=sys.stderr)
     print("# unmapped (%d): %s" % (len(miss), " ".join(miss)), file=sys.stderr)
-    json.dump(m, open("analysis/balance-keymap.json", "w"), indent=0, sort_keys=True)
+    json.dump(m, open("analysis/formats/generated/balance-keymap.json", "w"), indent=0, sort_keys=True)
 
 
 if __name__ == "__main__":

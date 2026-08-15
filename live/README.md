@@ -1,5 +1,9 @@
 # live — the running process
 
+**Status:** Working
+**Purpose:** Answer what static tools cannot: whether a mechanism is used, what the engine
+really reads, and what it does when a read comes up short.
+
 What the static tools cannot answer: whether a mechanism is *used*, what the
 engine actually reads, and what it does when a read comes up short. These
 attach to the running retail game — or, in `altest.c`'s case, to the machine
@@ -28,3 +32,7 @@ gcc -m32 -o analysis/tools/live/altest analysis/tools/live/altest.c \
 
 To drive the game while these watch it, see [../drive/](../drive/) and
 [../shim/](../shim/).
+
+---
+Verified by: Reproduction across runs; single observations of a live process are leads,
+not results.

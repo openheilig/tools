@@ -1,5 +1,9 @@
 # drive — playing the game headlessly
 
+**Status:** Working
+**Purpose:** Play the retail game from a script and capture what it drew, so runs can be
+compared against each other rather than against memory.
+
 A measurement is only worth something if it can be repeated. These drive the
 retail game from a script and capture what it drew, so a run can be compared
 against another run instead of against somebody's memory of it.
@@ -21,3 +25,6 @@ sh analysis/tools/drive/look.sh port     # or: retail
 
 The frames these produce are what the pixel gates in [../parity/](../parity/)
 consume.
+
+---
+Verified by: The captures themselves; a run that cannot be repeated is not evidence.

@@ -1,5 +1,9 @@
 # binary — static recovery
 
+**Status:** Working
+**Purpose:** Recover structure the linker could not strip: unwind tables, vtables,
+relocations, opcode tables.
+
 The shipped binaries are stripped: no symbols, no debug info. These tools
 recover structure from what the linker could not remove — exception-unwind
 tables, vtable layout, relocations, and the strings the code itself passes to
@@ -34,3 +38,7 @@ python3 analysis/tools/binary/ehframe_funcs.py install/sacred 0x8210b91
 
 `opcodes.py` shells out to `ehframe_funcs.py` beside it and imports
 `startcode.py` from [`../formats/`](../formats/).
+
+---
+Verified by: Its output is checked against a second binary before any claim is made --
+see `research/method/naming-oracle.md`.

@@ -1,5 +1,9 @@
 # shim — LD_PRELOAD interposers
 
+**Status:** Working
+**Purpose:** Interpose on the retail process through its dynamic imports, with no
+recompilation and no instrumentation a 2005 binary would not survive.
+
 32-bit shims loaded into the retail `sacred` process. The binary is stripped
 and closed, but every mechanism these touch is a *dynamic import*, so plain
 symbol interposition sees all of it — no recompilation, no instrumentation
@@ -29,3 +33,7 @@ tree is denied wholesale by the workspace `.gitignore` — it holds ~16 GB of
 non-redistributable game data. These `.c` files ship nothing of the game's.
 
 Front-ends that aim `autopilot.so` are in [../drive/](../drive/).
+
+---
+Verified by: `parity/` sweeps run with and without each shim; a shim that changes the
+result it is measuring is a broken instrument.

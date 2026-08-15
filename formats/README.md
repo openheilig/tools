@@ -1,5 +1,9 @@
 # formats — the parsers
 
+**Status:** Working
+**Purpose:** One parser per retail file format: read the bytes, print what was found,
+write nothing into the install.
+
 One tool per file format Sacred ships. Each reads bytes and prints what it
 found; none of them writes into the install, and none carries game data.
 
@@ -28,3 +32,7 @@ The formats themselves are documented in
 The `grn_*` tools and `export_terrain.py` guess the install as
 `../../../install` relative to this directory, and take `SACRED_INSTALL` (or
 `--game`) when the guess is wrong.
+
+---
+Verified by: `parity/` -- each parser is diffed against the GDScript reader in
+`engine/formats/`, and agreement is the evidence.

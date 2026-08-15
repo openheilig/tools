@@ -93,6 +93,9 @@ PY_CORPUS_LINE=$(/usr/bin/grep '^corpus' "$PY_OUT" | /usr/bin/sed -n '1p')
 require_field "$GD_CORPUS_LINE" "corpus line" "$GD_OUT"
 require_field "$PY_CORPUS_LINE" "corpus line" "$PY_OUT"
 
+# names= is a digest over every entry's "<index>:<name>", added 2026-08-15:
+# both walkers printed names and neither compared them, so truncating the name
+# field passed this gate.
 for KEY in entries walkable skipped; do
 	GD_VAL=$(printf '%s' "$GD_CORPUS_LINE" | /usr/bin/grep -o "${KEY}=[0-9]*" | /usr/bin/cut -d= -f2)
 	PY_VAL=$(printf '%s' "$PY_CORPUS_LINE" | /usr/bin/grep -o "${KEY}=[0-9]*" | /usr/bin/cut -d= -f2)
@@ -100,6 +103,13 @@ for KEY in entries walkable skipped; do
 	require_field "$PY_VAL" "$KEY (python corpus line)" "$PY_OUT"
 	compare "$KEY" "$GD_VAL" "$PY_VAL"
 done
+
+GD_NAMES=$(printf '%s' "$GD_CORPUS_LINE" | /usr/bin/grep -o 'names=[0-9a-f]*' | /usr/bin/cut -d= -f2)
+PY_NAMES=$(printf '%s' "$PY_CORPUS_LINE" | /usr/bin/grep -o 'names=[0-9a-f]*' | /usr/bin/cut -d= -f2)
+require_field "$GD_NAMES" "names digest (godot corpus line)" "$GD_OUT"
+require_field "$PY_NAMES" "names digest (python corpus line)" "$PY_OUT"
+compare "names" "$GD_NAMES" "$PY_NAMES"
+
 
 # The four documented tags only (root/copyright/object/final) -- the leaf
 # tag families and the terminator are out of this comparison's scope: the

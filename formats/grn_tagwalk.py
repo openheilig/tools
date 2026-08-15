@@ -400,6 +400,7 @@ def cmd_corpus(models_path, desync=0):
         n = len(entries)
 
         walkable = skipped = mesh_clean = motion_clean = 0
+        names_digest = hashlib.md5()
         skip_lines = []
         tag_entry_count = {}
         tag_total_count = {}
@@ -408,6 +409,7 @@ def cmd_corpus(models_path, desync=0):
             kind, offset, field3 = entries[i]
             true_len = derive_length(entries, i, file_size)
             name = read_name(f, offset)
+            names_digest.update(("%d:%s\n" % (i, name)).encode("utf-8"))
             ok, magic_off, reason = classify(f, kind, offset, true_len)
             if not ok:
                 skipped += 1
@@ -427,9 +429,15 @@ def cmd_corpus(models_path, desync=0):
             for tag in seen:
                 tag_entry_count[tag] = tag_entry_count.get(tag, 0) + 1
 
+        names_md5 = names_digest.hexdigest()
         suffix = f"\tfalsify={desync}" if desync else ""
-        print("corpus\tentries=%d\twalkable=%d\tskipped=%d\tmesh=%d\tmotion=%d%s" % (
-            n, walkable, skipped, mesh_clean, motion_clean, suffix))
+        # Names were printed by both walkers and compared by neither, so a
+        # truncated or misread name field passed the parity gate (measured
+        # 2026-08-15: NAME_LEN 64 -> 4 mangles every name and the gate still
+        # said PASS). One digest over index:name puts them in the compared
+        # surface without adding 4993 lines to the output.
+        print("corpus\tentries=%d\twalkable=%d\tskipped=%d\tmesh=%d\tmotion=%d\tnames=%s%s" % (
+            n, walkable, skipped, mesh_clean, motion_clean, names_md5, suffix))
         for i, name, kind, reason in skip_lines:
             print(f"skip\t{i}\tname={name}\tkind={kind}\treason={reason}")
 

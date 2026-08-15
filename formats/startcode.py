@@ -28,6 +28,12 @@ u32's own bytes were eaten as the string, and the rest of the record was parsed
 from the wrong offset. Nothing failed, because every unlisted tag is a
 zero-width no-op, so the garbage was absorbed silently.
 
+NUMSTR takes a SECOND string when its u32 is negative (row 838, handler
+disassembled): the sentinel means "the operand is the variable named in the
+string that follows", and the engine resolves that name and overwrites the
+sentinel with the result. 22 records across all 16 files; before this they
+absorbed their tail as garbage -- silently, which is the hollow metric again.
+
 The honest metric is therefore not "parses" but CONSUMES ITS BODY EXACTLY (or
 stops on an END tag). Excluding opcode 40, whose 80-byte ffffffff struct is not
 a tag stream at all: 95.6% before NUMSTR, 99.774% after (1,347,105/1,350,157
@@ -88,6 +94,23 @@ def parse(buf, with_tags=False):
                 tg.append(tag)
                 args.append(body[p:end].decode('latin-1'))
                 p = end + 1
+                # A SECOND string follows, behind two gates the handler applies
+                # in this order (row 838): the u32 just stored must be NEGATIVE
+                # -- `cmp DWORD PTR [slot],0 / jns epilogue` at 0x0826cb96 --
+                # and the byte after the first string must be non-zero, at
+                # 0x0826cba4. That second string is a '+'-joined variable
+                # expression: the handler strstrs it for '+', resolves the name
+                # against the symbol vector at +0x7550, and writes the RESULT
+                # back over the sentinel in the SAME numeric slot. So a negative
+                # u32 here is not a value, it is "the operand is the variable
+                # named below". 22 records across all 16 files.
+                if args[-2] & 0x80000000 and p < len(body) and body[p]:
+                    end = body.find(b'\0', p)
+                    if end < 0:
+                        break    # runs past the record: the engine reads on
+                    tg.append(tag)
+                    args.append(body[p:end].decode('latin-1'))
+                    p = end + 1
             elif w in (STR, STR2):
                 # STR2: the handler calls strcpy TWICE, so two NUL-terminated
                 # strings follow with no tag byte between them (e.g. 0x3a,

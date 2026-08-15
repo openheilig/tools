@@ -38,8 +38,10 @@ def resource_strings():
     (the u32 at `offset` itself is not the size) and runs `size` bytes.
     `res:N` in the scripts is the SLOT INDEX, not the id field -- the id field
     is not even monotonic in the low range and runs past 2^31.
-    Checks: slot 49 'Seraphim', 50 'Gladiator', 18101 'Settler',
-    19554 'Save... Vilya...'.
+    Checks: slot 0 'Seraphim', 1 'Gladiator', 18101 'Settler'. (The first two
+    read 49 and 50 until 2026-08-15; the file gives 'Unicorn' and 'Fire Troll'
+    there, so that line asserted something nothing had ever run. A resolver
+    whose self-check does run is in ../formats/globalres.py.)
     """
     d = open(RES, 'rb').read()
     first, = struct.unpack_from('<I', d, 8)                  # entry 0's offset

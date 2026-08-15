@@ -17,6 +17,7 @@ they re-derive it separately on purpose.
 | `pak.py` | Sacred `.pak` reader, both container shapes. |
 | `parse_trg.py` | `TRG v1` resource parser (what `Triggers.PAK` actually is). |
 | `startcode.py` | `Start/FunkCode.bin` script bytecode parser. |
+| `armascript.py` | Armalion `ACS` compiled scripts, checked call-for-call against the `.txt` source shipped beside them. The only source↔bytecode pair in any Sacred build. |
 | `globalres.py` | `scripts/<lang>/global.res`, both ways: `res:N` by slot, and the engine's own by-name hash so a numeric resource id resolves to its English text. |
 | `grn_tagwalk.py` | Independent tag walker for Granny 1.x `.GRN` entries in `models.pak`. |
 | `grn_bonenames.py` | Bone index → bone name resolution across `.GRN` entries. |

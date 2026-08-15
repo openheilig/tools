@@ -9,7 +9,7 @@ Common header:
 
 Two layouts follow, told apart by whether the count tiles the remaining bytes:
 
-  FIXED  (creature 86, items 140, weapon 322, sndprofiles 196, tiles 76):
+  FIXED  (creature 86, weapon 322, sndprofiles 196, tiles 76):
       0x100  record[count], stride = (filesize - 256) / count
       Record 0 is a reserved all-zero null slot. creature.pak's 86-byte
       stride is the same 0x56 the 2.30 binary uses in TypeManager::get, so
@@ -132,7 +132,12 @@ def main(argv):
 def _self_check():
     # ponytail: the only real logic is layout detection + stride derivation.
     assert (41020 - HDR) % 474 == 0 and (41020 - HDR) // 474 == 86, "creature.pak fixed stride"
-    assert (4587776 - HDR) // 32768 == 140, "items.pak fixed stride"
+    # items.pak is a TRAP: (4587776-256)/32768 == 140 exactly, so the fixed
+    # reading is arithmetically valid and silently returns empty names for
+    # every record. looks_blob() correctly overrides it. Assert the override,
+    # not the stride -- an earlier assert here claimed the fixed reading and
+    # sent a reader down it (autoresearch row 833).
+    assert (4587776 - HDR) % 32768 == 0, "items.pak also tiles -- that is the trap"
     assert (434339908 - HDR) % 4993 != 0, "models.pak must fall through to blob"
     assert name_of(b"BAT.GRN\0\0\0") == "BAT.GRN", "blob name parse"
     assert name_of(b"RIFF\x40\x82\x00\x00WAVE") == "", "raw payload has no name"

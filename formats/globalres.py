@@ -69,9 +69,16 @@ def load(path=DEFAULT):
     d = open(path, 'rb').read()
     if d[:2] != b'SZ':
         raise ValueError(f'{path}: not a global.res ({d[:4]!r})')
-    first, = struct.unpack_from('<I', d, 8)          # entry 0's data offset
+    # Entry 0's data offset is NOT where the index ends -- it is four bytes
+    # short of it, and (first - 4) is not a multiple of 16. The index runs to
+    # `first + 4` and the count is `first // 16` exactly. `range(4, first, 16)`
+    # happened to produce the same number by overshooting, which is why this is
+    # spelled out: the last entry is real ('Gero Wachholz') and its `size`
+    # field lands on the four bytes in front of entry 0's text -- the same
+    # "u32 at offset that is not the size" every payload carries.
+    first, = struct.unpack_from('<I', d, 8)
     slots, by_hash = [], {}
-    for i in range(4, first, 16):
+    for i in range(4, first + 4 - 15, 16):
         h, off, _z, size = struct.unpack_from('<4I', d, i)
         t = (d[off + 4:off + 4 + size].decode('utf-16-le', 'replace')
              if off + 4 + size <= len(d) else '')

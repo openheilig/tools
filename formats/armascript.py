@@ -178,6 +178,33 @@ def main(pak, srcdir):
             d = next((f'{a} != {b}' for a, b in pairs if a != b), '')
             print(f'  MISMATCH {name}: {d}')
 
+    # Per-id verification. The sequence check above says the id space is
+    # right; this says WHICH ids are individually pinned. An id already in the
+    # table that lands where the source names that same function is CONFIRMED;
+    # an id the table has no entry for is only PREDICTED, which is weaker and
+    # is kept separate rather than merged in.
+    conf, pred = {}, {}
+    for name, words, strung_here in ents:
+        want = src.get(name)
+        if strung_here or want is None:
+            continue
+        ids = calls(words)
+        if len(want) > len(ids):
+            continue
+        tail = ids[len(ids) - len(want):] if want else []
+        if not all(names.get(i) is None or names[i] == b
+                   for i, b in zip(tail, want)):
+            continue
+        for i, b in zip(tail, want):
+            (conf if i in names else pred).setdefault(i, set()).add(b)
+    contradiction = {i: v for i, v in conf.items() if len(v) > 1}
+    print(f'  {len(conf)} ids confirmed name-for-name '
+          f'({", ".join(f"{i}={sorted(v)[0]}" for i, v in sorted(conf.items()))})')
+    print(f'  {len(pred)} predicted from a table gap, weaker: '
+          + ', '.join(f'{i}~{sorted(v)[0]}' for i, v in sorted(pred.items())))
+    if contradiction:
+        print(f'  FAIL an id maps to two names: {contradiction}')
+
     print(f'armascript: ACS v{ver}, {len(ents)} functions; '
           f'{ok} of the {ok + bad} string-free functions match their source '
           f'call-for-call, {bad} do not; {strung} embed a string and are not '
@@ -185,7 +212,7 @@ def main(pak, srcdir):
     if ok < MIN_MATCH:
         print(f'  FAIL only {ok} functions align, floor is {MIN_MATCH} -- '
               f'the decoding regressed')
-    return 0 if ok >= MIN_MATCH else 1
+    return 0 if ok >= MIN_MATCH and not contradiction else 1
 
 
 if __name__ == '__main__':

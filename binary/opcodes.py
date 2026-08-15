@@ -78,6 +78,28 @@ NAMES = {
     138: 'UI_WND_TASKBAR', 139: 'UI_WND_TASKBAR',
 }
 
+# A SECOND, WEAKER TIER. The names above come from strings inside the handler
+# itself. These come from strings reachable within two calls of it (Impl2.java
+# on the opcode table 0x086f4298, caller cap 8), which is weaker because a
+# shared callee's message can be mistaken for the caller's purpose. Two filters
+# make it usable:
+#
+#   1. the string must be reachable from EXACTLY ONE opcode block, and
+#   2. opsem.py's independent behavioural profile must agree with it.
+#
+# Filter 2 is not decoration. Opcode 79 uniquely reaches
+# `cCreature::equipment_reset() EquipmentRef unknown?!`, but its operands are
+# `(res:TEXT, small id)` carrying quest prose, so that string belongs to
+# something deeper and 79 is deliberately NOT named.
+REACHED = {
+    17: 'award experience to hero (addExperience(%d) level%d tmp%d; operands Hero + 10000/5000/1000)',
+    20: 'quest-in-sector trigger by number ("QIS_Trigger%d"; one u32 quest id)',
+    25: 'CreateDynamicQuest (Pool, Header, Typ, ToDo; always follows opcode 58/IF)',
+    120: 'play movie (reaches the 14-entry .\\MOVIE\\*.MPG table; one small index)',
+    121: 'AUTOSAVE (operand is a checkpoint name, tag 0x1d, e.g. uw_autosave_01)',
+    126: 'NPC refusal speech (SOUND_FX_REJECT*; one small int)',
+}
+
 
 def disasm(lo, hi):
     """addr -> instruction text, Intel syntax."""
@@ -248,7 +270,12 @@ def markdown(table, path):
                 'is silently ignored.\n\n'
                 '`strings` are .rodata literals inside the handler itself. '
                 '`name` is filled in only where those strings say what the '
-                'handler does.\n\n'
+                'handler does. A name marked **[reached]** is weaker: it comes '
+                'from a string reachable within two calls of the handler '
+                'rather than inside it, and is given only when that string is '
+                'reachable from exactly ONE opcode and `opsem.py`\'s '
+                'independent behavioural profile agrees. Opcode 79 passes the '
+                'first test and fails the second, so it is left blank.\n\n'
                 '`classes` are RTTI classes the handler names outright -- a '
                 'typeinfo it dynamic_casts to, a vtable it constructs, or a '
                 'method it calls directly. `cEvent`, `cEventNetwork`, '
@@ -264,7 +291,7 @@ def markdown(table, path):
             strs = ' / '.join(s.strip() for s in e['strings'][:4]) if e else ''
             args = ', '.join(str(a)[:32] for a in (sample or [])[:6])
             o.write(f"| {op} | {h} | {e['size'] if e else ''} | {n} | "
-                    f"{NAMES.get(op, '')} | {', '.join(e['classes']) if e else ''} | "
+                    f"{NAMES.get(op) or (REACHED[op] + ' [reached]' if op in REACHED else '')} | {', '.join(e['classes']) if e else ''} | "
                     f"{strs.replace('|', '/')} | {args.replace('|', '/')} |\n")
 
 

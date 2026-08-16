@@ -3,35 +3,35 @@
 
 CLAUDE.md states the row contract -- exactly four tab-separated fields, `id`,
 `YYYY-MM-DD`, `kebab-case-slug`, one paragraph with no tabs and no newlines --
-and says it is "checked rather than trusted". It was not checked. Nothing in
-`checks/` or `tools/` had ever read this file, and 539 of its 853 rows do not
-have four fields: an older six-field schema (`iteration/binary/metric/runs/
-status/description`) accounts for 450 of them, and rows with 1, 3, 5, 7, 9 and
-10 fields account for the rest.
+and says it is "checked rather than trusted".
 
-Rewriting 539 rows of research history to satisfy a contract written after them
-would destroy the record to make a gate green, so this is a RATCHET instead.
-The count of non-conforming rows is pinned below. The gate fails if that count
-GROWS, if a conforming row stops conforming, or if an id is duplicated or goes
+THE RATCHET IS CLOSED. This gate was written as one, pinned at 539 legacy rows
+in five older schemas that it declined to rewrite. Those rows have since been
+normalised into the contract without losing a character: their extra columns
+are folded into the paragraph in order, joined with ' | ', and the status tag
+leads the paragraph where it is not the slug. The pin is 0 and the contract is
+enforced from the first row, so there is no longer a legacy class to grow.
+
+What that normalisation could NOT recover is the dates: 492 rows never carried
+one, and the repo's first commit imported the whole log at once, so git blame
+dates every legacy line to the import. Those dates are inferred from the
+nearest dated row and are NOT evidence -- the file's header comment says so,
+and nothing here can check it.
+
+The gate fails if any row breaks the contract, or if an id is duplicated or goes
 backwards. Legacy rows are grandfathered and named; nothing new may join them.
-
-Lower the pin when you genuinely fix a legacy row. Never raise it.
 
 Usage:  log_check.py [path]        exit 0 pass, 1 fail
 """
 import re
 import sys
 
-# Rows before MODERN_FROM predate the contract and are checked only for field
-# count, against a pinned total. Ratchet: both numbers may fall, never rise.
-# Row 661 is where the four-field schema becomes continuous; 827 is the one
-# later row that never adopted it.
-MODERN_FROM = 661
-LEGACY_BAD_MAX = 539
-GRANDFATHERED = {827}
-
 SLUG = re.compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
 DATE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+# The four oldest rows are 0, 0b, 0c, 0d -- one run and three re-runs of it,
+# numbered as retail's own patch letters are. Their suffix is history, not a
+# typo, so ids sort as (number, suffix) rather than as integers.
+ID = re.compile(r'^(\d+)([a-z]?)$')
 
 
 def check(path):
@@ -41,18 +41,19 @@ def check(path):
 
     bad, conforming, ids, fail = [], 0, [], []
     for i, line in enumerate(rows, 1):
+        if line.startswith('#'):
+            continue
         f = line.split('\t')
         if len(f) != 4:
             bad.append((i, len(f)))
             continue
         conforming += 1
         rid, date, slug, para = f
-        if i < MODERN_FROM or i in GRANDFATHERED:
-            continue
-        if not rid.isdigit():
+        m = ID.match(rid)
+        if not m:
             fail.append(f'row {i}: id {rid!r} is not a number')
             continue
-        ids.append((int(rid), i))
+        ids.append(((int(m.group(1)), m.group(2)), rid, i))
         if not DATE.match(date):
             fail.append(f'row {i}: date {date!r} is not YYYY-MM-DD')
         if not SLUG.match(slug):
@@ -60,26 +61,21 @@ def check(path):
         if not para.strip():
             fail.append(f'row {i}: empty paragraph')
 
-    if len(bad) > LEGACY_BAD_MAX:
-        fail.append(f'{len(bad)} rows are not four fields, pin is '
-                    f'{LEGACY_BAD_MAX} -- a malformed row was added: '
-                    f'{bad[-3:]}')
+    if bad:
+        fail.append(f'{len(bad)} rows are not four fields: {bad[:3]}')
 
     seen = {}
-    for rid, line in ids:
-        if rid in seen:
-            fail.append(f'row {line}: id {rid} duplicates row {seen[rid]}')
-        seen[rid] = line
+    for key, rid, line in ids:
+        if key in seen:
+            fail.append(f'row {line}: id {rid} duplicates row {seen[key]}')
+        seen[key] = line
 
-    ordered = [r for r, _ in ids]
-    for a, b in zip(ordered, ordered[1:]):
+    for (a, ra, _), (b, rb, lb) in zip(ids, ids[1:]):
         if b <= a:
-            fail.append(f'id {b} does not follow {a}')
+            fail.append(f'row {lb}: id {rb} does not follow {ra}')
             break
 
-    print(f'{path}: {len(rows)} rows, {conforming} four-field, '
-          f'{len(bad)} not (pin {LEGACY_BAD_MAX}); '
-          f'contract enforced from row {MODERN_FROM}')
+    print(f'{path}: {len(rows)} rows, {conforming} conforming, {len(bad)} not')
     for m in fail:
         print('  FAIL ' + m)
     return not fail

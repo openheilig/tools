@@ -33,7 +33,12 @@ import re
 import subprocess
 import sys
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# realpath, not abspath: the private workspace reaches this repo through an
+# `analysis/tools` symlink, and abspath leaves that link in the path -- ROOT
+# then lands inside the workspace and BAL points at a file that is not there,
+# so the tool works when run from the repo and fails when run the documented
+# way. The source is what ROOT means, so resolve the link.
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 BIN = os.path.join(ROOT, 'donotpublish/install/sacred_orig')
 RES = os.path.join(ROOT, 'donotpublish/install/scripts/us/global.res')
 BAL = os.path.join(ROOT, 'research/formats/generated/balance-globals.tsv')

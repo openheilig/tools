@@ -16,6 +16,7 @@ its handlers.
 | `xrefs.py` | Every `call`/`jmp rel32` in `.text` targeting a given address. |
 | `opcodes.py` | Map script opcodes to their engine handlers, and name them from handler strings. |
 | `opsem.py` | Name opcodes from *behaviour* instead — what the shipped scripts do with them. |
+| `opcode_names.py` | Name opcodes from the script **compiler's** own keyword tables — a pointer array into a string run plus a parallel opcode array, so the binding is retail's rather than inferred. Names 120 of 141; re-checks the seven opcodes named by unrelated routes first, and exits 1 if one disagrees. |
 | `tagwidths.py` | Derive script tag widths by following control flow in the interpreter. |
 | `balance_keymap.py` | Recover the `balance.bin` field map from `Sacred.exe`. |
 | `skillmap.py` | Map each `balance.bin` family prefix (`AK`, `FK`, `W`, …) to the skill it tunes, via `resource id = skill type + 9399` and `FUN_081f686a`'s type-indexed jump table. Self-checks against thirteen ids the case bodies push themselves; exits 1 on a mismatch. |
@@ -25,9 +26,14 @@ its handlers.
 | `eiphist.py` | Resolve the autopilot EIP sampler's output against the same run's memory maps. |
 | [`ghidra/`](ghidra/) | Headless decompilation of the same binaries: read a handler as C, dump a jump table, seed a program with the vtable names. |
 
-Two of these are deliberately redundant: `opcodes.py` names an opcode from the
-handler it dispatches to, `opsem.py` names it from what the shipped scripts do
-with it. Agreement between them is the evidence; a disagreement is a finding.
+Three of these are deliberately redundant: `opcodes.py` names an opcode from
+the handler it dispatches to, `opsem.py` from what the shipped scripts do with
+it, and `opcode_names.py` from what the compiler that emitted them called
+them. Agreement between them is the evidence; a disagreement is a finding —
+and one has already paid off, `opcode_names.py` refuting `opcodes.py`'s
+`atmo_rg` on opcodes 67, 75 and 76 (they are `SetVar`, `IncVar`, `DecVar`;
+`atmo_rg` is a frequent operand, which is the failure mode of naming a thing
+after its payload).
 Naming rules are in
 [research/method/naming-oracle.md](../../research/method/naming-oracle.md).
 

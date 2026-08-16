@@ -59,11 +59,15 @@ Verified by: Itself -- this directory is what everything else is verified by.
 ## `log_check.py` — the findings log's own shape
 
 `CLAUDE.md` states the four-field row contract and calls it "checked rather
-than trusted". Nothing checked it: no gate in `checks/` and no tool in
-`tools/` had ever read `autoresearch-results.tsv`, and 539 of its 853 rows do
-not have four fields. `log_check.py` is that check, as a ratchet rather than a
-rewrite -- the legacy count is pinned and may only fall, and the field contract
-is enforced strictly from row 661, where the schema becomes continuous.
+than trusted". Nothing checked it, and 539 of its 853 rows did not have four
+fields. `log_check.py` is that check. It began as a ratchet around those rows;
+they have since been normalised into the contract without losing a character,
+so the pin is gone and every row is enforced from the first.
+
+One thing the normalisation could not recover: 492 rows never carried a date,
+and the repo's first commit imported the whole log at once, so `git blame`
+dates every legacy line to the import. Their dates are inferred from the
+nearest dated row. The log's header comment says so; no gate can check it.
 
 ```sh
 python3 analysis/tools/parity/log_check.py     # 0 pass, 1 fail

@@ -12,6 +12,10 @@
 # tools/live/gdb_run.sh); we replicate play.sh's environment the same way.
 #
 #   sh tmp/tohit_bp.sh <seconds-to-run>
+#
+# BPS=<file> replaces the built-in breakpoint block with one of your own, so
+# the same launch environment serves the other combat sites. See
+# bp-damage.gdb, which reads the four damage channels in sub_81FAC30.
 set -u
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 INSTALL="$ROOT/install"
@@ -33,6 +37,9 @@ mkdir -p "$HOME/.lgp/sacred"
 cp -f lgp-state/saveindex "$HOME/.lgp/sacred/.saveindex"
 rm -f "$HOME/.lgp/sacred/debug.log"
 
+if [ -n "${BPS:-}" ]; then
+  cp "$BPS" /tmp/tohit.gdb
+else
 cat >/tmp/tohit.gdb <<'EOF'
 set pagination off
 set confirm off
@@ -68,6 +75,7 @@ printf "PA_GET caller=%#x creature=%#x\n", *(unsigned int*)$esp, *(unsigned int*
 continue
 end
 EOF
+fi
 # Synchronous run: the breakpoint `commands` blocks resume it themselves.
 # `run &` plus `interrupt` is what tools/live/gdb_run.sh does and it no longer
 # works on this gdb ("Selected thread is running"), so do not copy it.

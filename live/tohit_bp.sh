@@ -18,7 +18,8 @@ INSTALL="$ROOT/install"
 cd "$INSTALL"
 
 AFTER=${1:-70}
-PRELUDE=$(sh "$ROOT/analysis/tools/drive/menu.sh" new)
+ROUTE=${ROUTE:-new}
+PRELUDE=$(sh "$ROOT/analysis/tools/drive/menu.sh" "$ROUTE")
 # EXTRA is appended to the menu prelude; times are absolute ms and the world
 # is ready at the offset menu.sh --ready reports (34000).
 PRELUDE="$PRELUDE${EXTRA:+;$EXTRA}"

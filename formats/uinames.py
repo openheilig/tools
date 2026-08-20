@@ -16,7 +16,22 @@ into it -- no pointer to any of its strings exists anywhere in the image, and
 no instruction takes one as an immediate -- so it is walked, not indexed, and
 that is why searching for xrefs never found it.
 
-    gfx id = blob index - 5
+    gfx id = blob index - 5      for ids up to ~351
+    gfx id = blob index - 3      from ~443 on
+
+THE OFFSET IS NOT CONSTANT, and the first version of this tool got that wrong.
+Two elements somewhere in ids 352..443 carry no name, so everything above the
+drift is named two places late. The band between the last confirmed +5 anchor
+(id 351) and the first confirmed +3 one (id 443) is NOT resolved, and this
+tool refuses to name it rather than guessing -- `load()` returns None for the
+name there and `--check` asserts the refusal.
+
+THE DRIFT IS MEASURED FROM RETAIL'S OWN DATA, not eyeballed. The combat-art
+table at 0x8793D00 (stride 120) carries, at +48/+52/+56, the three element
+indices each art draws with. Those must name an EMPTY / LOAD / FULL triple, and
+they do for 50 of the 52 triples that resolve -- but only at offset +3. The low
+end is pinned independently: id 351 is UI_PORTRAIT_MP at 127x189, and the
+alternative reading puts a 60x25 arrow there.
 
 THE ANCHOR IS SELF-IDENTIFYING, which is what makes the offset a measurement
 rather than a guess: blob index 6 is `UI_INVALID`, and gfx id 1 is the one
@@ -38,7 +53,10 @@ import struct
 import sys
 
 BLOB = (0x6CF9FD, 0x6D5722)     # file offsets of the packed name blob
-OFFSET = 5                      # blob index - OFFSET = gfx id
+# (last id where +5 is confirmed, first id where +3 is confirmed). Between them
+# the mapping is unknown and this tool says so instead of guessing.
+LOW_OFFSET, LOW_LAST = 5, 351
+HIGH_OFFSET, HIGH_FIRST = 3, 443
 TABLE = 0x880DC68               # gfx element table, virtual
 STRIDE = 84
 
@@ -55,14 +73,27 @@ def _vaddr_to_off(elf, v):
     raise ValueError(f'{v:#x} is in no PT_LOAD segment')
 
 
+def offset_for(gid):
+    """-> the blob offset for this id, or None inside the unresolved band."""
+    if gid <= LOW_LAST:
+        return LOW_OFFSET
+    if gid >= HIGH_FIRST:
+        return HIGH_OFFSET
+    return None
+
+
 def load(path):
-    """-> list of (id, name, sheet, (x, y, w, h)). Only ids the blob names."""
+    """-> list of (id, name, sheet, (x, y, w, h)). name is None where the
+    offset is unresolved -- see the drift note above. Only ids the blob names."""
     elf = open(path, 'rb').read()
     names = [s.decode('latin1')
              for s in elf[BLOB[0]:BLOB[1]].split(b'\0') if s]
     out = []
-    for i in range(OFFSET + 1, len(names)):
-        gid = i - OFFSET
+    for gid in range(1, len(names)):
+        off = offset_for(gid)
+        i = gid + off if off is not None else None
+        if i is not None and i >= len(names):
+            break
         rec = elf[_vaddr_to_off(elf, TABLE + STRIDE * (gid - 1)):][:STRIDE]
         sheet = rec[:32].split(b'\0')[0].decode('latin1')
         u0, v0, u1, v1 = struct.unpack_from('<4f', rec, 0x24)
@@ -70,9 +101,24 @@ def load(path):
         if own != gid:                       # past the table, or misaligned
             break
         # SIZE IS u1 - u0, not u1 - u0 + 1 -- see research/formats/ui-taskbar.md.
-        out.append((gid, names[i], sheet,
+        out.append((gid, names[i] if i is not None else None, sheet,
                     (int(u0), int(v0), int(u1 - u0), int(v1 - v0))))
     return out
+
+
+def art_triples(path):
+    """-> the element index triples the combat-art table draws with.
+
+    Ground truth for the offset: each is (EMPTY, LOAD, FULL) and consecutive.
+    """
+    elf = open(path, 'rb').read()
+    out = []
+    for i in range(1, 0x5F):
+        rec = elf[_vaddr_to_off(elf, 0x8793D00 + 120 * i):][:120]
+        a, b, c = struct.unpack_from('<3i', rec, 48)
+        if b == a + 1 and c == a + 2:
+            out.append(a)
+    return sorted(set(out))
 
 
 def _check(path):
@@ -113,10 +159,38 @@ def _check(path):
     # `MP` must be anchored between underscores or the count drowns in EMPTY,
     # COMPASS, CHAMP and VAMP -- 165 false positives on a bare substring.
     mp = [r[1] for r in rows
-          if re.search(r'MANA|_MP(_|$)|ENERG|STAMIN|AUSDAUER', r[1])]
-    want(mp == ['UI_PORTRAIT_MP', 'UI_PORTRAIT_MP_H', 'UI_PORTRAIT_MP_E'],
-         f'the only mana-looking names are the multiplayer portrait: {mp}')
-    want(len(rows) > 1400, f'named {len(rows)} elements')
+          if r[1] and re.search(r'MANA|_MP(_|$)|ENERG|STAMIN|AUSDAUER', r[1])]
+    want(mp == ['UI_PORTRAIT_MP'],
+         f'the only mana-looking name placed is the multiplayer portrait: {mp}')
+    # The mana conclusion does NOT depend on the id mapping: it is a search over
+    # the NAME LIST, which is complete whatever the offsets are.
+    all_names = [s.decode('latin1')
+                 for s in elf[BLOB[0]:BLOB[1]].split(b'\0') if s]
+    hits = [n for n in all_names
+            if re.search(r'MANA|_MP(_|$)|ENERG|STAMIN|AUSDAUER', n)]
+    want(hits == ['UI_PORTRAIT_MP', 'UI_PORTRAIT_MP_H', 'UI_PORTRAIT_MP_E'],
+         f'across ALL {len(all_names)} names, the only mana-looking ones are '
+         f'the multiplayer portrait: {hits}')
+    named = [r for r in rows if r[1]]
+    want(len(named) > 1300, f'named {len(named)} of {len(rows)} elements')
+    want(all(r[1] is None for r in rows if LOW_LAST < r[0] < HIGH_FIRST),
+         f'ids {LOW_LAST + 1}..{HIGH_FIRST - 1} are left unnamed, not guessed')
+    # THE DRIFT CHECK. Retail's combat-art table says which element triple each
+    # art draws with; every one must land on EMPTY / LOAD / FULL. This is what
+    # caught the constant-offset error, so it stays in the self-check.
+    by_name = {r[0]: r[1] for r in rows}
+    clean = bad = 0
+    for t in art_triples(path):
+        got = [by_name.get(t + 1 + k) for k in range(3)]
+        if None in got:
+            continue
+        if (got[0].endswith('_EMPTY') and got[1].endswith('_LOAD')
+                and got[2].endswith('_FULL')):
+            clean += 1
+        else:
+            bad += 1
+    want(bad == 0 and clean > 40,
+         f'{clean} combat-art triples name EMPTY/LOAD/FULL, {bad} do not')
     print('uinames: self-check ' + ('ok' if ok else 'FAILED'))
     return 0 if ok else 1
 

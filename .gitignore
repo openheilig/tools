@@ -21,6 +21,7 @@
 !*.c
 !*.h
 !*.def
+!*.gdb
 !*.md
 
 # 3. Belt and braces: build output and third-party trees.

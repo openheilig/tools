@@ -1,12 +1,23 @@
 #!/usr/bin/env python3
 """png_delta.py -- percentage of pixels that differ between two PNGs.
 
-Usage: png_delta.py A.png B.png [--crop=x,y,w,h]
+Usage: png_delta.py A.png B.png [--crop=x,y,w,h] [--mae]
 
 A pixel differs if any channel differs. The percentage is taken over the
 crop rectangle if given (x,y top-left, w,h size, pixels), else over the
 whole frame. Prints exactly one line: the percentage with two decimals
 (e.g. "0.00", "18.24").
+
+`--mae` appends a second field, the MEAN ABSOLUTE ERROR over the same
+rectangle -- the average per-pixel max-channel difference, 0..255, counting
+the pixels that match as the zeroes they are. The two answer different
+questions and the pair is what makes either readable: 11% differing at MAE
+2.3 is a near-miss everywhere, 11% at MAE 40 is a real content gap. The
+percentage alone cannot tell them apart, and it stays the gate's verdict
+because this project reproduces retail exactly rather than acceptably.
+
+The default output is UNCHANGED and remains a single field -- `drive/session.sh`
+parses it.
 
 Refuses loudly (message on stderr, exit 1, no percentage) on a missing
 file, an unreadable/non-image input, a size mismatch, or a malformed /
@@ -56,13 +67,16 @@ def parse_crop(arg: str, size: tuple[int, int]) -> tuple[int, int, int, int]:
 def main(argv: list[str]) -> None:
     args = [a for a in argv[1:] if not a.startswith("--")]
     crop_arg = None
+    want_mae = False
     for a in argv[1:]:
         if a.startswith("--crop="):
             crop_arg = a[len("--crop="):]
+        elif a == "--mae":
+            want_mae = True
         elif a.startswith("--"):
             die(f"unknown flag: {a}")
     if len(args) != 2:
-        die("usage: png_delta.py A.png B.png [--crop=x,y,w,h]")
+        die("usage: png_delta.py A.png B.png [--crop=x,y,w,h] [--mae]")
 
     a = load(args[0])
     b = load(args[1])
@@ -89,7 +103,12 @@ def main(argv: list[str]) -> None:
     hist = band.histogram()
     total = band.size[0] * band.size[1]
     changed = total - hist[0]
-    print(f"{100.0 * changed / total:.2f}")
+    out = f"{100.0 * changed / total:.2f}"
+    if want_mae:
+        # histogram index IS the max-channel difference, so the mean is a
+        # weighted sum over 256 buckets -- still one pass, no pixel loop.
+        out += f" {sum(i * n for i, n in enumerate(hist)) / total:.2f}"
+    print(out)
 
 
 if __name__ == "__main__":

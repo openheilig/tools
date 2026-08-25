@@ -17,7 +17,8 @@ returns a verdict that a human did not choose.
 | `follow_parity.sh` | Two pixel gates comparing port output against retail. |
 | `swap_walk.sh` | Supported-building interior/exterior swap gate. |
 | `loggia_sweep.sh` | The roofed-overhang crossing case. |
-| `png_delta.py` | Percentage of pixels differing between two PNGs — the primitive under the pixel gates. |
+| `png_delta.py` | Percentage of pixels differing between two PNGs — the primitive under the pixel gates. `--mae` adds the mean absolute error beside it. |
+| `start_scene_gate.sh` | **The milestone metric, with a verdict.** Drives a pair, measures world/taskbar/full, and ratchets against `start-scene-baseline.tsv`. The **world** band decides; the taskbar is reported, not gated. |
 | `p6_classify.py` | Translation-vs-content verdict for a pair of frames. |
 | `p6_cells.py` | Dump region cell classes in world coordinates around a point. |
 | `pax_diff.py` | Census one PAX section type across the eight-hero corpus. |

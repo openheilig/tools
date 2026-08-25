@@ -30,9 +30,32 @@ five.
 ```sh
 python3 tools/vk/mine.py --all               # everything, resumable
 python3 tools/vk/mine.py overlookers         # one group
+python3 tools/vk/mine.py --articles          # long-form articles (run after --all)
+python3 tools/vk/mine.py --links [--dump]    # every off-site url, by host
 python3 tools/vk/mine.py --search "floor.pak"
 python3 tools/vk/mine.py --selftest          # no token, no network
 ```
+
+Measured 2026-08-25: **88,914 items and 12,913 attachments** — 10,472 posts,
+25,681 comments, 52,623 topic comments, 47 topics, 91 articles.
+
+## What is NOT collected
+
+**9,292 album photos and 362 videos, by decision.** ⚠️ The first survey called
+photos zero because **`photos.getAll` returns 0 for all five groups while
+`photos.getAlbums` does not** — do not trust a zero from that API without the
+second call.
+
+**Articles come from the mobile host, not the API.** `articles.get` answers
+*"Unknown method passed"* and no attachment among 12,913 carries type
+`article`, so the only handle is the `/@slug` urls the posts link. `vk.ru`
+answers *"your browser is outdated"* and its SPA never renders server-side;
+`m.vk.ru` returns the article as ordinary HTML to a plain browser user-agent.
+
+**Whether five groups is all of them is not established.** `groups.search`
+refuses a service key (`error 15, Access denied`), so VK cannot be asked
+directly — that needs a *user* token. The corpus's own cross-references turn up
+no sixth Sacred community, but absence of evidence is what that is.
 
 ## The token
 

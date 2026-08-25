@@ -20,7 +20,7 @@ writes to VK and nothing needs a user login.
 
 ponytail: stdlib only -- urllib and sqlite3's own FTS5.  No requests, no ORM.
 """
-import json, os, re, sqlite3, sys, time, urllib.error, urllib.parse, urllib.request
+import html, json, os, re, sqlite3, sys, time, urllib.error, urllib.parse, urllib.request
 
 GROUPS = ["overlookers", "sacred_nl", "sacredtribute", "sacredwiki", "sacred.srrp"]
 API, VER, PAGE = "https://api.vk.ru/method/", "5.199", 100
@@ -140,20 +140,43 @@ def mine(c, name):
 
     for p in c.execute("SELECT id FROM item WHERE grp=? AND kind='post'", (grp,)).fetchall():
         pid = p[0]
-        key = "%s/cmts/%d" % (grp, pid)
+        key = "%s/cmts2/%d" % (grp, pid)
         if resume(c, key):
             continue
-        try:
-            r = api("wall.getComments", owner_id=oid, post_id=pid,
-                    count=PAGE, thread_items_count=10)
-        except RuntimeError:
-            mark(c, key, 1); continue           # deleted or comments closed
-        for it in r.get("items", []):
-            save(c, grp, "comment", oid, it, parent=pid)
-            for t in (it.get("thread") or {}).get("items", []):
-                save(c, grp, "comment", oid, t, parent=pid)
+        # Comments paginate exactly like the wall does.  An earlier version
+        # fetched ONE page per post and silently truncated every discussion
+        # past 100 -- the busiest threads, which are the ones worth having.
+        off, total = 0, 1
+        while off < total:
+            try:
+                r = api("wall.getComments", owner_id=oid, post_id=pid,
+                        count=PAGE, offset=off, thread_items_count=10)
+            except RuntimeError:
+                break                           # deleted, or comments closed
+            total = r.get("count", 0)
+            for it in r.get("items", []):
+                save(c, grp, "comment", oid, it, parent=pid)
+                th = it.get("thread") or {}
+                for t in th.get("items", []):
+                    save(c, grp, "comment", oid, t, parent=pid)
+                # thread_items_count caps at 10; deeper replies need their own
+                # call, keyed on the parent comment.
+                if th.get("count", 0) > len(th.get("items", [])):
+                    toff = 0
+                    while toff < th["count"]:
+                        try:
+                            tr = api("wall.getComments", owner_id=oid,
+                                     post_id=pid, comment_id=it["id"],
+                                     count=PAGE, offset=toff)
+                        except RuntimeError:
+                            break
+                        for t in tr.get("items", []):
+                            save(c, grp, "comment", oid, t, parent=pid)
+                        toff += PAGE
+                        time.sleep(SLEEP)
+            off += PAGE
+            time.sleep(SLEEP)
         mark(c, key, 1)
-        time.sleep(SLEEP)
     c.commit()
 
     tr = api("board.getTopics", group_id=gid, count=PAGE)
@@ -213,6 +236,70 @@ def links(c, dump=False):
     print("\n%d distinct off-site urls across %d hosts" % (len(found), len(hosts)))
 
 
+ART_RE = re.compile(r"https?://(?:m\.)?vk\.(?:com|ru)/(@[\w.\-]+)", re.I)
+# A plain browser UA is enough.  vk.ru itself answers "your browser is
+# outdated" and the desktop SPA never renders server-side, but the MOBILE host
+# returns the article as real HTML.
+UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+
+
+def untag(html_text):
+    t = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", html_text, flags=re.S | re.I)
+    t = re.sub(r"<br\s*/?>|</p>|</div>|</li>", "\n", t, flags=re.I)
+    return "\n".join(
+        ln.strip() for ln in html.unescape(re.sub(r"<[^>]+>", " ", t)).splitlines()
+        if ln.strip())
+
+
+def articles(c):
+    """VK long-form articles.
+
+    There is no API for these -- `articles.get` answers "Unknown method
+    passed" and no wall attachment carries type `article` -- so the only
+    handle is the /@slug urls the posts themselves link, which is why this
+    runs after the walls are mined rather than beside them.
+    """
+    urls = set()
+    for (u,) in c.execute("SELECT url FROM attach WHERE url LIKE '%/@%'"):
+        m = ART_RE.search(u or "")
+        if m:
+            urls.add(m.group(1))
+    for (t,) in c.execute("SELECT text FROM item WHERE text LIKE '%/@%'"):
+        for m in ART_RE.finditer(t):
+            urls.add(m.group(1))
+    print("%d distinct articles referenced" % len(urls), flush=True)
+    for i, slug in enumerate(sorted(urls), 1):
+        key = "article/%s" % slug
+        if resume(c, key):
+            continue
+        url = "https://m.vk.ru/" + slug
+        try:
+            req = urllib.request.Request(url, headers={
+                "User-Agent": UA, "Accept-Language": "ru,en"})
+            raw = urllib.request.urlopen(req, timeout=45).read()
+        except Exception as e:
+            print("    %-58s FAILED %s" % (slug[:58], e), flush=True)
+            mark(c, key, 1)
+            continue
+        page = raw.decode("utf-8", "replace")
+        ttl = re.search(r"<title>(.*?)</title>", page, re.S)
+        ttl = html.unescape(ttl.group(1)).strip() if ttl else slug
+        body = untag(page)
+        grp = slug[1:].split("-")[0]
+        uid = "article:%s" % slug
+        c.execute("INSERT OR REPLACE INTO item VALUES(?,?,?,?,?,?,?,?,?,?)",
+                  (uid, grp, "article", 0, 0, 0, 0, ttl + "\n" + body, url, ""))
+        c.execute("DELETE FROM ft WHERE uid=?", (uid,))
+        c.execute("INSERT INTO ft VALUES(?,?,?,?)", (uid, grp, "article",
+                                                     ttl + "\n" + body))
+        mark(c, key, 1)
+        print("    [%3d/%d] %-52s %6d chars" % (i, len(urls), slug[:52], len(body)),
+              flush=True)
+        time.sleep(SLEEP)
+    c.commit()
+
+
 def search(c, q):
     rows = c.execute("""SELECT f.grp, f.kind, i.date, i.url, snippet(ft,3,'>>','<<','…',18)
                         FROM ft f JOIN item i ON i.uid=f.uid
@@ -249,6 +336,8 @@ if __name__ == "__main__":
         search(c, " ".join(a[1:])); sys.exit()
     if a and a[0] == "--links":
         links(c, dump="--dump" in a); sys.exit()
+    if a and a[0] == "--articles":
+        articles(c); sys.exit()
     for name in (GROUPS if (not a or a[0] == "--all") else a):
         mine(c, name)
     print("\ncorpus:", DB)

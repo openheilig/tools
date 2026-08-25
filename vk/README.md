@@ -41,10 +41,22 @@ Measured 2026-08-25: **88,914 items and 12,913 attachments** — 10,472 posts,
 
 ## What is NOT collected
 
-**9,292 album photos and 362 videos, by decision.** ⚠️ The first survey called
-photos zero because **`photos.getAll` returns 0 for all five groups while
-`photos.getAlbums` does not** — do not trust a zero from that API without the
-second call.
+**Wiki pages and the Files sections — blocked, not skipped.** Both need a *user*
+key; see below. At least **613 wiki-page links** appear in the corpus text
+(`vk.com/page-8640958_44473423`, `vk.com/page-21089257_31469447`, …) and none of
+that content is held. `sacredwiki` calls itself «Энциклопедия игры», so its wiki
+pages may be its principal content. Run `--wiki` and `--docs [--download]` once
+a user key exists.
+
+**9,292 album photos and 362 videos, by decision.**
+
+⚠️ **TWO FALSE ZEROS, both mine, both the same bug.** The first survey read
+`.get("response",{}).get("count",0)`, which turns an *error* response into a
+zero, and then reported that zero as a measurement. `photos.getAll` really does
+return 0 while `photos.getAlbums` reports 9,292 — but **`docs.get` never
+returned 0 at all**: it answers `error 28, method is unavailable with service
+token`, so the Files sections were never measured. Do not trust a zero from this
+API without checking for an error first.
 
 **Articles come from the mobile host, not the API.** `articles.get` answers
 *"Unknown method passed"* and no attachment among 12,913 carries type
@@ -52,10 +64,44 @@ second call.
 answers *"your browser is outdated"* and its SPA never renders server-side;
 `m.vk.ru` returns the article as ordinary HTML to a plain browser user-agent.
 
-**Whether five groups is all of them is not established.** `groups.search`
-refuses a service key (`error 15, Access denied`), so VK cannot be asked
-directly — that needs a *user* token. The corpus's own cross-references turn up
-no sixth Sacred community, but absence of evidence is what that is.
+**What a service key cannot do, verified rather than assumed:**
+
+| Method | Answer to a service key |
+|---|---|
+| `groups.search` | `error 15, Access denied` — tested on two independent apps |
+| `pages.get`, `pages.getTitles` | `error 28` |
+| `docs.get`, `docs.getById` | `error 28` |
+| `market.get` | `error 28` |
+
+For wiki pages and files there is **no anonymous route either**, and each was
+checked: the mobile host serves a login wall for `page-…` (unlike articles,
+which it serves fine), a stored doc url fetched directly returns **HTTP 418**,
+and the Wayback CDX index holds **zero** snapshots of `vk.com/page-<gid>*` or
+`vk.com/docs-<gid>*` for any of the five groups.
+
+**A VK ID user key does not fix it, and this was tested rather than assumed.**
+A real user token was obtained through `auth.py` on 2026-08-25 (VK ID, OAuth 2.1
++ PKCE, app registered as a website with a `https://` redirect). It is a genuine
+user token — `users.get` returns Durov, `wall.get` on the operator's own wall
+returns their 156 posts. But `pages.*`, `docs.*`, `groups.*` and `account.*` all
+answer **`error 1051, method is unavailable with current profile type`**, and
+they answer it even for the operator's OWN documents and OWN group list. So 1051
+is not a permissions-on-that-group problem; that whole family of methods is
+barred to this class of token.
+
+The cause is visible in the grant: `scope=vkid.personal_info groups` was
+requested and `vkid.personal_info` was what came back. **VK ID does not grant the
+classic social scopes** (`docs`, `pages`, `groups`) at all, and the flows that
+used to — Authorization Code and Implicit — were disabled 25 June 2024.
+
+**Conclusion: wiki pages and the Files sections are unreachable through any
+supported API route.** `--wiki` and `--docs` are kept because they are correct
+and would run against a token that carried those scopes; nothing available today
+does.
+
+So `--find-groups` needs `auth.py`, and even then may hit 1051. The corpus's own
+cross-references turn up no sixth Sacred community, but absence of evidence is
+what that is.
 
 ## The token
 

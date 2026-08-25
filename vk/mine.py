@@ -23,6 +23,9 @@ ponytail: stdlib only -- urllib and sqlite3's own FTS5.  No requests, no ORM.
 import html, json, os, re, sqlite3, sys, time, urllib.error, urllib.parse, urllib.request
 
 GROUPS = ["overlookers", "sacred_nl", "sacredtribute", "sacredwiki", "sacred.srrp"]
+GROUP_IDS = {"overlookers": 76291554, "sacred_nl": 191594029,
+             "sacredtribute": 209940413, "sacredwiki": 8640958,
+             "sacred.srrp": 21089257}
 API, VER, PAGE = "https://api.vk.ru/method/", "5.199", 100
 SLEEP = 0.34                      # service tokens are capped at 3 requests/second
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -300,6 +303,165 @@ def articles(c):
     c.commit()
 
 
+def find_groups(c):
+    """Every Sacred community VK knows about, diffed against what we mined.
+
+    This is the one job a service key cannot do: groups.search answers
+    `error 15, Access denied` to it, twice over, from two different apps. So
+    it borrows the VK ID user key that auth.py stores.
+    """
+    sys.path.insert(0, HERE)
+    import auth
+    tok = auth.token()
+    if not tok:
+        sys.exit("needs a user key: python3 tools/vk/auth.py login --app-id N")
+    have = {r[0] for r in c.execute("SELECT DISTINCT grp FROM item")}
+    seen, rows = {}, []
+    for q in ("Sacred", "Сакред", "Sacred Underworld", "Анкария", "Ancaria",
+              "Sacred мод", "Sacred Underworld мод", "Князь тьмы"):
+        p = urllib.parse.urlencode({"q": q, "count": 100, "sort": 0,
+                                    "access_token": tok, "v": VER})
+        try:
+            r = json.load(urllib.request.urlopen(
+                "https://api.vk.ru/method/groups.search?" + p, timeout=45))
+        except Exception as e:
+            print("  %-22s request failed: %s" % (q, e)); continue
+        if "error" in r:
+            print("  %-22s %s" % (q, r["error"]["error_msg"])); continue
+        for g in r["response"]["items"]:
+            seen.setdefault(g["id"], g)
+        print("  %-22s %d results" % (q, len(r["response"]["items"])))
+        time.sleep(SLEEP)
+    for gid, g in seen.items():
+        nm = (g.get("name") or "")
+        if not any(k in nm.lower() for k in
+                   ("sacred", "сакред", "анкар", "ancaria", "князь тьмы")):
+            continue                      # the searches also return noise
+        rows.append((g.get("members_count") or 0, gid, g))
+    print("\n%-40s %-20s %8s  %s" % ("name", "screen_name", "members", "state"))
+    for mc, gid, g in sorted(rows, key=lambda x: -x[0]):
+        print("%-40s %-20s %8d  %s" % (
+            nm_trim(g.get("name")), (g.get("screen_name") or "")[:20], mc,
+            "mined" if (g.get("screen_name") in have or str(gid) in have) else "NEW"))
+    print("\n%d Sacred-named communities; %d already mined" % (
+        len(rows), sum(1 for _, gid, g in rows
+                       if (g.get("screen_name") in have or str(gid) in have))))
+
+
+def nm_trim(n):
+    return (n or "")[:40]
+
+
+def _user_api(method, tok, **params):
+    params.update(access_token=tok, v=VER)
+    url = API + method + "?" + urllib.parse.urlencode(params)
+    for attempt in range(4):
+        r = json.load(urllib.request.urlopen(url, timeout=60))
+        if "error" not in r:
+            return r["response"]
+        if r["error"]["error_code"] in (6, 9, 10):
+            time.sleep(2 ** attempt); continue
+        raise RuntimeError("%s: %s" % (method, r["error"]["error_msg"]))
+    raise RuntimeError("%s: gave up" % method)
+
+
+def _user_token():
+    sys.path.insert(0, HERE)
+    import auth
+    t = auth.token()
+    if not t:
+        sys.exit("needs a user key: python3 tools/vk/auth.py login --app-id N\n"
+                 "(pages.* and docs.* both answer error 28 to a service key)")
+    return t
+
+
+def wiki(c):
+    """VK wiki pages.
+
+    Not reachable any other way, and this was checked rather than assumed:
+    pages.get and pages.getTitles both answer error 28 to a service key, the
+    mobile host serves a login wall instead of the page (unlike articles), and
+    the Wayback CDX index holds ZERO snapshots of vk.com/page-<gid>* for any of
+    the five groups. So this needs the user key.
+    """
+    tok = _user_token()
+    for grp, gid in GROUP_IDS.items():
+        try:
+            titles = _user_api("pages.getTitles", tok, group_id=gid)
+        except RuntimeError as e:
+            print("  %-14s %s" % (grp, e)); continue
+        print("  %-14s %d wiki pages" % (grp, len(titles)))
+        for t in titles:
+            key = "wiki/%s/%s" % (grp, t["id"])
+            if resume(c, key):
+                continue
+            try:
+                pg = _user_api("pages.get", tok, owner_id=-gid, page_id=t["id"],
+                               need_source=1, need_html=0)
+            except RuntimeError as e:
+                print("      %-40s %s" % (t.get("title", "")[:40], e))
+                mark(c, key, 1); continue
+            body = (pg.get("source") or pg.get("text") or "")
+            uid = "wiki:%s:%s" % (grp, t["id"])
+            txt = (pg.get("title") or "") + "\n" + body
+            c.execute("INSERT OR REPLACE INTO item VALUES(?,?,?,?,?,?,?,?,?,?)",
+                      (uid, grp, "wiki", t["id"], 0, t.get("edited", 0),
+                       t.get("editor_id", 0), txt,
+                       "https://vk.ru/page-%d_%d" % (gid, t["id"]),
+                       json.dumps(pg, ensure_ascii=False)))
+            c.execute("DELETE FROM ft WHERE uid=?", (uid,))
+            c.execute("INSERT INTO ft VALUES(?,?,?,?)", (uid, grp, "wiki", txt))
+            mark(c, key, 1)
+            print("      %-46s %6d chars" % ((pg.get("title") or "")[:46], len(body)))
+            time.sleep(SLEEP)
+        c.commit()
+
+
+def docs(c, download=False):
+    """The groups' Files sections, and optionally the files themselves.
+
+    ⚠️ The first survey reported docs=0 for all five groups. That was a BUG in
+    the survey, not a fact: it read `.get("response",{}).get("count",0)`, which
+    turns an error response into a zero. docs.get actually answers error 28 to
+    a service key, so the real count was never measured. Stored doc urls do not
+    work either -- fetching one directly returns HTTP 418.
+    """
+    tok = _user_token()
+    out = os.path.join(os.path.dirname(DB), "files")
+    for grp, gid in GROUP_IDS.items():
+        off, total = 0, 1
+        while off < total:
+            try:
+                r = _user_api("docs.get", tok, owner_id=-gid, count=PAGE, offset=off)
+            except RuntimeError as e:
+                print("  %-14s %s" % (grp, e)); break
+            total = r.get("count", 0)
+            if off == 0:
+                print("  %-14s %d files" % (grp, total))
+            for d in r.get("items", []):
+                c.execute("INSERT INTO attach VALUES(?,?,?,?,?,?,?)",
+                          ("docs:%s:%s" % (grp, d["id"]), grp, "doc",
+                           d.get("title", ""), d.get("ext", ""),
+                           d.get("size", 0), d.get("url", "")))
+                if download and d.get("url"):
+                    os.makedirs(out, exist_ok=True)
+                    safe = re.sub(r"[^\w.\-]", "_", d.get("title", str(d["id"])))[:80]
+                    dst = os.path.join(out, "%s_%s" % (d["id"], safe))
+                    if not os.path.exists(dst):
+                        try:
+                            req = urllib.request.Request(d["url"], headers={"User-Agent": UA})
+                            with urllib.request.urlopen(req, timeout=120) as fh, \
+                                 open(dst, "wb") as w:
+                                w.write(fh.read())
+                            print("      saved %s (%d b)" % (safe, os.path.getsize(dst)))
+                        except Exception as e:
+                            print("      FAILED %s: %s" % (safe, e))
+                    time.sleep(SLEEP)
+            off += PAGE
+            time.sleep(SLEEP)
+        c.commit()
+
+
 def search(c, q):
     rows = c.execute("""SELECT f.grp, f.kind, i.date, i.url, snippet(ft,3,'>>','<<','…',18)
                         FROM ft f JOIN item i ON i.uid=f.uid
@@ -338,6 +500,12 @@ if __name__ == "__main__":
         links(c, dump="--dump" in a); sys.exit()
     if a and a[0] == "--articles":
         articles(c); sys.exit()
+    if a and a[0] == "--find-groups":
+        find_groups(c); sys.exit()
+    if a and a[0] == "--wiki":
+        wiki(c); sys.exit()
+    if a and a[0] == "--docs":
+        docs(c, download="--download" in a); sys.exit()
     for name in (GROUPS if (not a or a[0] == "--all") else a):
         mine(c, name)
     print("\ncorpus:", DB)

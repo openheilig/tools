@@ -67,6 +67,17 @@ def probe(path):
     with open(path, "rb") as fh:
         head = fh.read(HDR)
     magic, ver = head[:3].decode("latin1"), head[3]
+    # The save family shares the .pak EXTENSION and is not this format at all:
+    # install/save/game01.pak is "AMS", a world save, and a hero is "AMH".
+    # Without this guard probe() reports `magic='AMS' v27 entries=64
+    # layout=blob` and prints plausible-looking nonsense -- it even decodes the
+    # save's own title string, which is what makes it convincing. Their layout
+    # is 12-byte {DataType, Offset, UnpackedSize} entries at 0x100; see
+    # research/formats/pax-saves.md.
+    if magic in ("AMS", "AMH"):
+        raise SystemExit(
+            f"{path}: {magic} save, not a pak container -- see "
+            f"research/formats/pax-saves.md (shares the extension, not the format)")
     count = struct.unpack("<I", head[4:8])[0]
     if not count:
         raise SystemExit(f"{path}: zero entry count")

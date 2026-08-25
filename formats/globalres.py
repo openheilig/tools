@@ -52,15 +52,32 @@ Usage:  globalres.py <id>...            resolve numeric resource ids
 import struct
 import sys
 
+
+def _i32(x):
+    """Wrap to a signed 32-bit int, the way the engine's registers do."""
+    x &= 0xffffffff
+    return x - (1 << 32) if x >= (1 << 31) else x
+
 DEFAULT = 'install/scripts/us/global.res'
 MOD = 0x3b9ac9f7
 
 
 def name_hash(name):
-    """FUN_080ae4d2: the key every by-name lookup in the engine uses."""
+    """FUN_080ae4d2: the key every by-name lookup in the engine uses.
+
+    RUN IT IN INT32. Retail's sub_80ACC3E is 32-bit: 0x71*h passes 2**32 from
+    the fifth character on and WRAPS, and the modulo is x86 idiv, whose
+    remainder takes the DIVIDEND's sign, so h goes negative between iterations.
+    Unbounded Python arithmetic agrees for exactly four characters and diverges
+    after -- which makes every numeric id in the shipped files (3-5 digits)
+    resolve and look like proof, while every symbolic name silently misses.
+    That was findings row 954; this function carried the refuted version until
+    2026-08-25 (row 1083) and returned None for every symbolic lookup.
+    """
     h = 0
     for c in name:
-        h = (h * 0x71 + ord(c.upper())) % MOD
+        h = _i32(_i32(h * 0x71) + ord(c.upper()))
+        h = _i32(h - MOD * int(h / MOD))          # C remainder: sign of dividend
     return h & 0x7fffffff
 
 
@@ -106,6 +123,12 @@ def _demo():
     k = name_hash('9400')
     assert by_id(k - (1 << 31), by_hash) == 'Heavenly Magic'
     assert by_id(9400, by_hash) != by_id(9401, by_hash)
+    # SYMBOLIC names are the check that catches the int32 bug: these are all
+    # longer than four characters, so a 64-bit hash misses every one of them.
+    assert by_hash.get(name_hash('UI_QUICKSAVE')) == 'Quicksave'
+    assert by_hash.get(name_hash('INVENTAR_RES_PHYSICAL')) == 'Physical Resistance'
+    assert by_hash.get(name_hash('D1Dorf_01')) == 'Smith'
+    assert by_hash.get(name_hash('EWT_Schwert')) == 'Sword'
     print('globalres: self-check ok')
 
 

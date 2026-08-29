@@ -25,6 +25,9 @@ its handlers.
 | `armalog.py` | Read the Armalion debug build's `DEBUG.LOG`: 22 class `sizeof`s and every container's version and entry count, with `--check` comparing them to retail. |
 | `eiphist.py` | Resolve the autopilot EIP sampler's output against the same run's memory maps. |
 | [`ghidra/`](ghidra/) | Headless decompilation of the same binaries: read a handler as C, dump a jump table, seed a program with the vtable names. |
+| `decompile_dump.py` | Bulk Hex-Rays decompilation of one binary via idalib: per-function pseudocode chunks + a manifest, per-function watchdog, database closed unsaved. Produced the `analysis/decomp/` corpus. |
+| `extract_vftables_idalib.py` | Export MSVC `??_7` vftable layouts (class, slot, target) from an IDA-analyzed PE — the Windows counterpart of `vtables.py`. |
+| `identity_join.py` | Merge every recovered identity for one binary (assert names, RTTI methods, IDA names, doc-derived roles) into one annotated `names.tsv`. |
 
 Three of these are deliberately redundant: `opcodes.py` names an opcode from
 the handler it dispatches to, `opsem.py` from what the shipped scripts do with

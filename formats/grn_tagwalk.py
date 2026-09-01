@@ -50,6 +50,12 @@ TERMINATOR_TAG = 0xCA5EFFFF
 KIND_MESH, KIND_MOTION = 64, 65
 # Root tag lives at a different constant offset per kind -- measured this
 # session (matches 03-RESEARCH.md's "Container and Index Layer" census).
+# Reconciled 2026-09-01 (research/formats/granny-grn.md, "The container,
+# reconciled"): each value is signature_offset + 0x40 -- a fixed 64-byte
+# vendor signature ends exactly at the root tag, at 0x100 (kind 65) and
+# 0x4AA (kind 64) entry-relative -- and the walk's 32/20/20/36 header
+# strides are the 32-byte root chunk + a 3x0x14 section table (0102/0103/
+# 0101) + section 0's prologue. The numbers below stay as measured.
 MAGIC_OFFSET = {KIND_MESH: 0x4EA, KIND_MOTION: 0x140}
 
 # Total on-disk size, tag included, for each fixed-shape header chunk.

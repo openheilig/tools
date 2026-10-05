@@ -27,7 +27,7 @@ returns a verdict that a human did not choose.
 | `static_next_check.py` | Pins `nextStaticId` at `static.pak` `+0x1f` by structure — a linked list has no record targeted twice, and a linked record is never a cell head. Runs against the Armalion prerelease too, whose `Static.PAK` is the same `OBJ v1` record. |
 
 ⚠️ `race_sweep.sh` was invalidated four times before being rewritten. Read
-[research/method/discipline.md](../../research/method/discipline.md) before
+[research/method/discipline.md](https://github.com/openheilig/research/blob/main/method/discipline.md) before
 trusting a number it produces — the failure mode was the instrument, not the
 engine.
 

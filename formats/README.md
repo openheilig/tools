@@ -27,7 +27,7 @@ they re-derive it separately on purpose.
 | `compare_world_resources.py` | Read-only census and comparison of world trigger/resource archives. |
 
 The formats themselves are documented in
-[research/formats/](../../research/formats/).
+[research/formats/](https://github.com/openheilig/research/tree/main/formats/).
 
 ## Finding the install
 

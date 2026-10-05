@@ -10,6 +10,14 @@ the retail game.
 All of them operate on a Sacred Gold install you already own. None of them
 contain or redistribute game data.
 
+Public development tools, not a bundled retail runtime or a completed 1:1
+verification system. Portable explicit-input readers coexist with historical
+private-corpus scripts. See the
+[tooling audit](https://github.com/openheilig/engine/blob/main/docs/tooling.md)
+and [0.0.1 contract](https://github.com/openheilig/engine/blob/main/docs/milestone-0.0.1.md)
+for supported entrypoints and proof limits. Capture/patch/profiling drivers can
+launch, terminate or mutate local processes/files; read their headers first.
+
 ## Start here
 
 | I want to… | Read |
@@ -23,12 +31,12 @@ contain or redistribute game data.
 | ground-truth `.GRN` against the retail runtime | [granny_oracle/](granny_oracle/) — **blocked**, read its README first |
 
 Nothing here forms a verdict on its own. What the tools *found* is written up
-in [research](../research); the rule that decides when a finding counts is
-[research/method/discipline.md](../research/method/discipline.md).
+in [research](https://github.com/openheilig/research); the rule that decides when a finding counts is
+[research/method/discipline.md](https://github.com/openheilig/research/blob/main/method/discipline.md).
 
 Every directory README opens with a **Status** and a **Purpose** line and ends
 with the gate that keeps it honest — the same shape the research repo uses,
-described in [research/README.md](../research/README.md). A tools README says
+described in [research/README.md](https://github.com/openheilig/research). A tools README says
 what its programs do and how to run them; the *investigation* a tool was built
 for belongs in research, not here.
 
@@ -46,37 +54,35 @@ granny_oracle/   C probes that call the retail Granny 2.x runtime
 
 ## Running them from a fresh clone — read this first
 
-**Point two environment variables at your own copies and everything works:**
+Some scripts honor these variables; they are not universal overrides:
 
 ```sh
 export SACRED_INSTALL=/path/to/your/sacred/install
 export SACRED_PORT=/path/to/the/engine/checkout   # only the tools that drive it
 ```
 
-Without them, half of these scripts look in the wrong directory. Measured from
-an actual clone into `/tmp`, before the variables existed: 23 of 40 ran fine,
-16 could not, because they guess the retail install from their own location:
+**Correction, 2026-10-05:** the earlier promise that these two variables made
+every fresh-clone script work was false. Several drivers still call through
+the private `analysis/tools` layout; binary/corpus helpers can retain fixed
+workspace paths. The engine itself uses `--install=PATH`, then remembered
+configuration, not `SACRED_INSTALL`. Check both the entrypoint and its invoked
+helpers before running a tool outside the private workspace.
 
-```sh
-ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
-```
+Start with explicit-input readers such as `formats/pak.py`,
+`formats/startcode.py`, `formats/parse_trg.py`, `binary/vtables.py`,
+`binary/ehframe_funcs.py` and `binary/xrefs.py`; read each usage/header and
+supply your own files. Do not copy our private install, launcher, captures or
+databases to make a corpus-specific recipe run.
 
-That guess assumes the layout this project uses internally — the repo sitting
-at `<workspace>/analysis/tools/<group>/` with the install at
-`<workspace>/install/` — so from `/tmp/tools/parity/` it resolves to `/tmp`
-and finds nothing. It does not fail loudly; it looks in the wrong place.
-`SACRED_INSTALL` and `SACRED_PORT` now override that guess in **every** script
-that makes it, and the guess remains the default so nothing changes for anyone
-working inside the workspace.
+The retail capture chain still includes hardcoded `/tmp` paths inside the C
+shim, shared-output cleanup and process termination. Setting `TMPDIR` alone
+does not isolate it. Those legacy recipes are experimental, not a safe
+read-only health check or a standalone 0.0.1 acceptance gate.
 
-The 23 that never needed either take their input as an argument — `pak.py`,
-`startcode.py`, `parse_trg.py`, `vtables.py`, `ehframe_funcs.py`, `xrefs.py`
-and the rest. Run them with no arguments and they print their usage.
-
-Four tools resolve workspace paths from the **current directory** rather than
-from their own, so run those from the workspace root, or set the variables:
-`binary/opcodes.py`, `binary/opsem.py`, `binary/balance_keymap.py` (also honours
-`SACRED_EXE` for the Windows binary it reads), `live/patch_1002.py`.
+`parity/start_scene_gate.sh` is a world-only regression ratchet that can
+update its baseline. It is not zero-difference retail equality and does not
+gate the HUD. Independent decoder checks, simulation replay and actual
+visible/audio/player-route acceptance remain separate proof channels.
 
 ## Not here
 
@@ -87,9 +93,9 @@ output (`live/altest`, `shim/*.so`) is regenerable and untracked.
 
 This is one of three repositories:
 
-- [engine](../engine) — the reimplementation: an open Sacred Gold engine on
+- [engine](https://github.com/openheilig/engine) — the reimplementation: an open Sacred Gold engine on
   Godot 4.7 that reads your own retail install.
-- [research](../research) — what the formats are, and how each finding was
+- [research](https://github.com/openheilig/research) — what the formats are, and how each finding was
   established.
 
 ## Licence

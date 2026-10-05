@@ -49,7 +49,7 @@ The converter **crashes on every real Sacred `.GRN`**, at one instruction,
 insensitive to pairing, ordering, slicing or flags — and returns cleanly on
 nonexistent paths, which is what proves the fault is content-triggered. The
 full investigation, its two corrections and the control that closed it are in
-[research/engine/granny-runtime-oracle.md](../../research/engine/granny-runtime-oracle.md).
+[research/engine/granny-runtime-oracle.md](https://github.com/openheilig/research/blob/main/engine/granny-runtime-oracle.md).
 Read that before opening a new hypothesis; three were tried and closed.
 
 ---

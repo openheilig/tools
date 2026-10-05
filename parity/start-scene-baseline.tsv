@@ -1,0 +1,7 @@
+# The start-scene ratchet. One row per measured band.
+# band	pct	mae	measured	row
+# `pct` is the gate's verdict for the band marked GATES in start_scene_gate.sh.
+# Lower is better; the gate rewrites this file when a run improves on it.
+world	5.05	1.86	2026-09-07	1098
+taskbar	11.01	6.96	2026-09-07	1098
+full	6.44	3.16	2026-09-07	1098

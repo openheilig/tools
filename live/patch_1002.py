@@ -31,7 +31,7 @@ from pathlib import Path
 
 # absolute(), not resolve(): this file is reached through a symlink from the
 # workspace, and resolving it would land ROOT outside the workspace entirely.
-ROOT = Path(__file__).absolute().parents[2]
+ROOT = Path(__file__).absolute().parents[3]
 SRC = ROOT / "analysis/lgp-2010/sacred-1.0.02-final"
 REF_ORIG = ROOT / "install/sacred_orig"        # pristine 1.0.01
 REF_PATCHED = ROOT / "install/sacred.1.0.01"   # patched 1.0.01 (was live pre-2026-08-06)
@@ -183,12 +183,14 @@ def main():
     gj = glfail_jne(buf)
     edits.append(("GL fail branch", gj, bytes(buf[gj:gj + 6]), b"\x90" * 6))
 
-    # 7. VRAM cache: -1 (redetect, parses a log Wayland does not have) -> 256 MB
+    # 7. Cached return value is MiB, not the raw KiB parsed from Xorg's log.
+    # The preseeded path bypasses /1024; 262144 << 20 wraps to a zero budget.
+    # Keep 256 MiB resident rather than evicting every newly loaded texture.
     vs = vram_slot(buf)
     if bytes(buf[vs:vs + 4]) != b"\xff\xff\xff\xff":
         die(f"VRAM slot at 0x{vs:x} is not -1")
     edits.append(("VRAM cache init", vs, b"\xff\xff\xff\xff",
-                  struct.pack("<I", 262144)))
+                  struct.pack("<I", 256)))
 
 
     for name, off, want, new in edits:

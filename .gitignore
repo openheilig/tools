@@ -23,6 +23,8 @@
 !*.def
 !*.gdb
 !*.md
+# Our numeric regression measurements, not captured retail pixels or assets.
+!parity/start-scene-baseline.tsv
 
 # 3. Belt and braces: build output and third-party trees.
 vendor/
@@ -31,3 +33,21 @@ __pycache__/
 *.o
 *.bak
 altest
+
+# Authored C/Python is allowed; decompiler output and private probes' results are not.
+decomp-*.c
+/donotpublish/
+/install/
+/data/
+/analysis/
+/decomp/
+/chunks/
+/symbols/
+/captures/
+/traces/
+/cache/
+/tmp/
+/export/
+/.codegraph/
+/graft/
+/.remember/

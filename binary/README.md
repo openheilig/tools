@@ -38,7 +38,7 @@ and one has already paid off, `opcode_names.py` refuting `opcodes.py`'s
 `atmo_rg` is a frequent operand, which is the failure mode of naming a thing
 after its payload).
 Naming rules are in
-[research/method/naming-oracle.md](../../research/method/naming-oracle.md).
+[research/method/naming-oracle.md](https://github.com/openheilig/research/blob/main/method/naming-oracle.md).
 
 ## Which binary — read this before trusting an address
 
